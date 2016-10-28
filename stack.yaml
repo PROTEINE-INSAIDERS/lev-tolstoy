@@ -1,0 +1,4 @@
+resolver: lts-7.5
+
+extra-deps:
+  - binary-0.8.4.0

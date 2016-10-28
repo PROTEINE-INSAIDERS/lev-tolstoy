@@ -1,0 +1,79 @@
+name:                lev-tolstoy
+version:             0.1.0.0
+synopsis:            "Lev Tolstoy" - binary reader and writer.
+description:         Please see README.md
+homepage:            https://github.com/PROTEINE-INSAIDERS/lev-tolstoy/#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Stanislav Chernichkin
+maintainer:          schernichkin@gmail.com
+copyright:           Copyright (C) 2016 Stanislav Chernichkin
+category:            Data, Parsing
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >= 1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Lev.Buffer
+                     , Lev.Layout
+                     , Lev.Monad
+                     , Lev.Reader
+                     , Lev.Writer
+  build-depends:       base
+                     , bytestring
+                     , cpu
+                     , ghc-prim
+                     , primitive
+                     , singletons
+  default-language:    Haskell2010
+  ghc-options:         -Wall -O2 -funbox-strict-fields
+
+-- TODO: remove
+executable lev-tolstoy
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -Wall -O2
+  build-depends:       base
+                     , bytestring
+                     , ghc-prim
+                     , lev-tolstoy
+                     , primitive
+  default-language:    Haskell2010
+
+test-suite lev-tolstoy-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , HUnit
+                     , lev-tolstoy
+                     , QuickCheck
+                     , test-framework
+                     , test-framework-hunit
+                     , test-framework-quickcheck2
+  ghc-options:         -Wall -O2 -funbox-strict-fields -main-is Spec.main
+  default-language:    Haskell2010
+
+benchmark lev-tolstoy-bench
+  type:                exitcode-stdio-1.0
+  main-is:             Bench.hs
+  hs-source-dirs:      bench
+  build-depends:       base
+                     , binary >= 0.8.4.0
+                     , bytestring
+                     , cereal
+                     , criterion
+                     , lev-tolstoy
+                     , ghc-prim
+                     , primitive
+  other-modules:       Bench.Binary
+                     , Bench.Cereal
+                     , Bench.Handwritten
+                     , Bench.Lev
+  default-language:    Haskell2010
+  ghc-options:         -Wall -O2 -funbox-strict-fields -fmax-simplifier-iterations=6 -main-is Bench.main
+
+source-repository head
+  type:     git
+  location: https://github.com/PROTEINE-INSAIDERS/lev-tolstoy.git
