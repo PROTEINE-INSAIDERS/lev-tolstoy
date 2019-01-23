@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 03e4c51beb2f94c1679a6bc3604a6330300bb4fce820f7ec0accb26e78838380
+-- hash: 48eefac1863b7f0dd5e49604601c83b19425e263c0f2f3a76d8e32fae778f5bc
 
 name:           lev-tolstoy
 version:        0.0.0.0
@@ -70,7 +70,7 @@ test-suite lev-tolstoy-test
       Paths_lev_tolstoy
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -main-is Spec.main -Wall
   build-depends:
       HUnit
     , QuickCheck
@@ -97,7 +97,7 @@ benchmark lev-tolstoy-bench
       Paths_lev_tolstoy
   hs-source-dirs:
       bench
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  ghc-options: -main-is Bench.main -O2 -funbox-strict-fields -fmax-simplifier-iterations=6 -Wall
   build-depends:
       base
     , binary >=0.8.4.0
