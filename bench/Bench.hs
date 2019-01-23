@@ -22,8 +22,8 @@ readerBench = bgroup "reader" [ strict ]
           bgroup "read 1G into 12 int64 + int32"
           [
             bench "Handwritten" $ nf handwritten buffer, bench "Lev" $ nfIO $ levReader buffer
-          -- , bench "Binary" $ nf binary buffer
-          -- , bench "Cereal" $ nf cereal buffer
+          , bench "Binary" $ nf binary buffer
+          , bench "Cereal" $ nf cereal buffer
           ]
           where
             {-# INLINE bufferSize #-}
@@ -68,7 +68,7 @@ readerBench = bgroup "reader" [ strict ]
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
           [ -- bench "lev big-endian" $ nf bigEndian buffer
-          -- ,  bench "lev little-endian" $ nf littleEndian buffer
+          -- , bench "lev little-endian" $ nf littleEndian buffer
           ]
           where
             bufferSize :: Int
@@ -92,7 +92,7 @@ readerBench = bgroup "reader" [ strict ]
         byteStrings = env setupEnv $ \ ~buffer ->
           bgroup "read 100M into 4x25byte strings"
           [ bench "Lev" $ nfIO $ levReader buffer
-          -- ,  bench "Binary" $ nf binary buffer
+          , bench "Binary" $ nf binary buffer
           ]
           where
             bufferSize :: Int

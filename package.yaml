@@ -1,0 +1,76 @@
+name:                lev-tolstoy
+version:             0.0.0.0
+github:              "PROTEINE-INSAIDERS/lev-tolstoy"
+license:             BSD3
+author:              "Stanislav Chernichkin"
+maintainer:          "schernichkin@gmail.com"
+copyright:           "Copyright (C) 2016 Stanislav Chernichkin"
+category:            Data, Parsing
+
+extra-source-files:
+- README.md
+
+description:         Please see the README on GitHub at <https://github.com/PROTEINE-INSAIDERS/lev-tolstoy#readme>
+
+dependencies:       
+- base
+- bytestring
+- cpu
+- ghc-prim
+- primitive
+- singletons
+
+library:
+  source-dirs: src
+
+executables:
+  lev-tolstoy-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - lev-tolstoy
+    - bytestring
+    - ghc-prim
+    - lev-tolstoy
+    - primitive
+
+tests:
+  lev-tolstoy-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - HUnit
+    - lev-tolstoy
+    - QuickCheck
+    - test-framework
+    - test-framework-hunit
+    - test-framework-quickcheck2
+
+benchmarks:
+  lev-tolstoy-bench:
+    main:                Bench.hs
+    source-dirs:         bench
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - base
+    - binary >= 0.8.4.0
+    - bytestring
+    - cereal
+    - criterion
+    - lev-tolstoy
+    - ghc-prim
+    - primitive

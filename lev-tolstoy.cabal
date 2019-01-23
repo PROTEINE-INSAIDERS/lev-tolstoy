@@ -1,79 +1,112 @@
-name:                lev-tolstoy
-version:             0.1.0.0
-synopsis:            "Lev Tolstoy" - binary reader and writer.
-description:         Please see README.md
-homepage:            https://github.com/PROTEINE-INSAIDERS/lev-tolstoy/#readme
-license:             BSD3
-license-file:        LICENSE
-author:              Stanislav Chernichkin
-maintainer:          schernichkin@gmail.com
-copyright:           Copyright (C) 2016 Stanislav Chernichkin
-category:            Data, Parsing
-build-type:          Simple
--- extra-source-files:
-cabal-version:       >= 1.10
+cabal-version: 1.12
 
-library
-  hs-source-dirs:      src
-  exposed-modules:     Lev.Buffer
-                     , Lev.Layout
-                     , Lev.Monad
-                     , Lev.Reader
-                     , Lev.Writer
-  build-depends:       base
-                     , bytestring
-                     , cpu
-                     , ghc-prim
-                     , primitive
-                     , singletons
-  default-language:    Haskell2010
-  ghc-options:         -Wall -O2 -funbox-strict-fields
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 03e4c51beb2f94c1679a6bc3604a6330300bb4fce820f7ec0accb26e78838380
 
--- TODO: remove
-executable lev-tolstoy
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  ghc-options:         -Wall -O2
-  build-depends:       base
-                     , bytestring
-                     , ghc-prim
-                     , lev-tolstoy
-                     , primitive
-  default-language:    Haskell2010
-
-test-suite lev-tolstoy-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             Spec.hs
-  build-depends:       base
-                     , HUnit
-                     , lev-tolstoy
-                     , QuickCheck
-                     , test-framework
-                     , test-framework-hunit
-                     , test-framework-quickcheck2
-  ghc-options:         -Wall -O2 -funbox-strict-fields -main-is Spec.main
-  default-language:    Haskell2010
-
-benchmark lev-tolstoy-bench
-  type:                exitcode-stdio-1.0
-  main-is:             Bench.hs
-  hs-source-dirs:      bench
-  build-depends:       base
-                     , binary >= 0.8.4.0
-                     , bytestring
-                     , cereal
-                     , criterion
-                     , lev-tolstoy
-                     , ghc-prim
-                     , primitive
-  other-modules:       Bench.Binary
-                     , Bench.Cereal
-                     , Bench.Handwritten
-                     , Bench.Lev
-  default-language:    Haskell2010
-  ghc-options:         -Wall -O2 -funbox-strict-fields -fmax-simplifier-iterations=6 -main-is Bench.main
+name:           lev-tolstoy
+version:        0.0.0.0
+description:    Please see the README on GitHub at <https://github.com/PROTEINE-INSAIDERS/lev-tolstoy#readme>
+category:       Data, Parsing
+homepage:       https://github.com/PROTEINE-INSAIDERS/lev-tolstoy#readme
+bug-reports:    https://github.com/PROTEINE-INSAIDERS/lev-tolstoy/issues
+author:         Stanislav Chernichkin
+maintainer:     schernichkin@gmail.com
+copyright:      Copyright (C) 2016 Stanislav Chernichkin
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
-  location: https://github.com/PROTEINE-INSAIDERS/lev-tolstoy.git
+  type: git
+  location: https://github.com/PROTEINE-INSAIDERS/lev-tolstoy
+
+library
+  exposed-modules:
+      Lev.Buffer
+      Lev.Layout
+      Lev.Monad
+      Lev.Parser
+      Lev.Reader
+      Lev.Writer
+  other-modules:
+      Paths_lev_tolstoy
+  hs-source-dirs:
+      src
+  build-depends:
+      base
+    , bytestring
+    , cpu
+    , ghc-prim
+    , primitive
+    , singletons
+  default-language: Haskell2010
+
+executable lev-tolstoy-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_lev_tolstoy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base
+    , bytestring
+    , cpu
+    , ghc-prim
+    , lev-tolstoy
+    , primitive
+    , singletons
+  default-language: Haskell2010
+
+test-suite lev-tolstoy-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_lev_tolstoy
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      HUnit
+    , QuickCheck
+    , base
+    , bytestring
+    , cpu
+    , ghc-prim
+    , lev-tolstoy
+    , primitive
+    , singletons
+    , test-framework
+    , test-framework-hunit
+    , test-framework-quickcheck2
+  default-language: Haskell2010
+
+benchmark lev-tolstoy-bench
+  type: exitcode-stdio-1.0
+  main-is: Bench.hs
+  other-modules:
+      Bench.Binary
+      Bench.Cereal
+      Bench.Handwritten
+      Bench.Lev
+      Paths_lev_tolstoy
+  hs-source-dirs:
+      bench
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base
+    , binary >=0.8.4.0
+    , bytestring
+    , cereal
+    , cpu
+    , criterion
+    , ghc-prim
+    , lev-tolstoy
+    , primitive
+    , singletons
+  default-language: Haskell2010

@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeFamilies        #-}
 {-# LANGUAGE BangPatterns        #-}
 {-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE TypeApplications    #-}
 
 module Lev.Reader
   ( Reader
@@ -54,7 +55,7 @@ data Reader m p (l :: Layout) a where
   StaticReader :: !(Addr -> m a) -> Reader m p ('StaticLayout o s) a
   DynamicReader :: !(forall r . DynamicReaderState p -> DynamicReaderCont m p a r -> m (DynamicReaderResult m p r)) -> Reader m p 'DynamicLayout a
 
-type DynamicReaderState p = ( p, Addr, Int )
+type DynamicReaderState p = ( p, Addr, Int ) -- ^ (base pointer, current address, bytes read)
 
 data DynamicReaderResult m p r = Done  r
                                | Fetch !Addr !Int (DynamicReaderState p -> m (DynamicReaderResult m p r))
@@ -74,22 +75,24 @@ bindReader :: forall m p la lb a b .
      => Reader m p la a
      -> (a -> Reader m p lb b)
      -> Reader m p (BindLayout la lb) b
+
 bindReader (StaticReader fa) k = case (sing :: Sing lb) of
   SStaticLayout _ _ -> StaticReader $ \addr -> do
     a <- fa addr
     case k a of StaticReader fb -> fb addr
   SDynamicLayout -> DynamicReader $ \s k' -> case (sing :: Sing la) of
     SStaticLayout soff ssize -> do
-      let off = fromInteger (fromSing soff)
-          size = fromInteger (fromSing ssize)
-          DynamicReader fa' = dynamicReader (off + size) $ const fa
-      fa' s $ \s' a -> case k a of (DynamicReader fb) -> fb s' k'
+      let off = fromIntegral (natVal soff) :: Int
+          size =  fromIntegral (natVal ssize) :: Int
+      case dynamicReader (off + size) $ const fa of 
+        DynamicReader fa' -> fa' s $ \s' a -> case k a of (DynamicReader fb) -> fb s' k'
+
 bindReader (DynamicReader fa) k = case (sing :: Sing lb) of
   SStaticLayout soff ssize -> DynamicReader $ \s k' ->
     fa s $ \(base, addr, remains) a -> case k a of
       (StaticReader fb) -> do
-        let off =  fromInteger (fromSing soff)
-            size = fromInteger (fromSing ssize)
+        let off =  fromIntegral (natVal soff)
+            size = fromIntegral (natVal ssize)
             len = off + size
         if len <= remains
           then fb addr >>= k' (base, addr `plusAddr` len, remains - len)
@@ -121,8 +124,8 @@ runReaderWithForeignPtr :: forall l a . ( SingI (l :: Layout ) )
 runReaderWithForeignPtr (StaticReader f) bPtr bOff bSize =
   case (sing :: Sing l) of
     SStaticLayout soff ssize -> do
-      let loff = fromInteger (fromSing soff)
-          rReq = loff + fromInteger (fromSing ssize)
+      let loff = fromIntegral (natVal soff)
+          rReq = loff + fromIntegral (natVal ssize)
       when (bSize < rReq) $
         moduleError "runReader" $ "Buffer size = " ++ show bSize ++
                                   ", bytes required = " ++ show rReq
@@ -143,7 +146,7 @@ runReaderWithForeignPtr (DynamicReader f) bPtr bOff bSize =
 {-# INLINE readPrim #-}
 readPrim :: forall m p o a . ( PrimMonad m , Prim a, KnownNat o ) => Reader m p ('StaticLayout o (SizeOf a)) a
 readPrim = StaticReader $ \addr -> readOffAddr (addr `plusAddr` off) 0
-  where off = fromInteger $ natVal (Proxy :: Proxy o)
+  where off = fromIntegral $ natVal (Proxy :: Proxy o)
 
 type PrimReader a = forall m p o . ( PrimMonad m , Prim a, KnownNat o ) => Reader m p ('StaticLayout o (SizeOf a)) a
 

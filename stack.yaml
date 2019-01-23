@@ -1,4 +1,7 @@
-resolver: lts-7.5
+resolver: lts-13.4
 
-extra-deps:
-  - binary-0.8.4.0
+packages:
+  - .
+
+ghc-options:
+  $everything: -j -fprint-explicit-kinds

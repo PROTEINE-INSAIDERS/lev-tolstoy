@@ -35,9 +35,9 @@ data Layout = StaticLayout Offset Size
 
 data instance Sing (a :: Layout) where
   SDynamicLayout :: Sing 'DynamicLayout
-  SStaticLayout  :: Sing offset -> Sing size -> Sing ('StaticLayout offset size)
+  SStaticLayout  :: (KnownNat offset, KnownNat size) => Sing offset -> Sing size -> Sing ('StaticLayout offset size)
 
-instance (SingI offset, SingI size) => SingI ('StaticLayout offset size) where
+instance (KnownNat offset, KnownNat size, SingI offset, SingI size) => SingI ('StaticLayout offset size) where
   {-# INLINE sing #-}
   sing = SStaticLayout sing sing
 
@@ -46,11 +46,11 @@ instance SingI 'DynamicLayout where
   sing = SDynamicLayout
 
 type family BindLayout (a :: Layout) (b :: Layout) :: Layout where
-  BindLayout ('StaticLayout o1 s1) ('StaticLayout o2 s2) = 'StaticLayout o1 (s1 :+ s2)
+  BindLayout ('StaticLayout o1 s1) ('StaticLayout o2 s2) = 'StaticLayout o1 (s1 + s2)
   BindLayout _ _ = 'DynamicLayout
 
 type family BindLayoutInv (a :: Layout) (b :: Layout) :: Constraint where
-  BindLayoutInv ('StaticLayout o1 s1) ('StaticLayout o2 s2) = ((o1 :+ s1) ~ o2)
+  BindLayoutInv ('StaticLayout o1 s1) ('StaticLayout o2 s2) = ((o1 + s1) ~ o2)
   BindLayoutInv ('StaticLayout o s) 'DynamicLayout = (o ~ 0)
   BindLayoutInv 'DynamicLayout ('StaticLayout o s) = (o ~ 0)
   BindLayoutInv _ _ = ()
