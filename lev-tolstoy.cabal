@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 48eefac1863b7f0dd5e49604601c83b19425e263c0f2f3a76d8e32fae778f5bc
+-- hash: 114352e0fe7a65781a93f6b9838988288654938e4e12421a511562bbd5325507
 
 name:           lev-tolstoy
 version:        0.0.0.0
@@ -32,6 +32,7 @@ library
       Lev.Monad
       Lev.Parser
       Lev.Reader
+      Lev.Reader.Static
       Lev.Writer
   other-modules:
       Paths_lev_tolstoy
