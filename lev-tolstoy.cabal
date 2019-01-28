@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 114352e0fe7a65781a93f6b9838988288654938e4e12421a511562bbd5325507
+-- hash: 395895041426d282c063c80adeaa20273c79e8a1db09cf6cdb857004f02dd8eb
 
 name:           lev-tolstoy
 version:        0.0.0.0
@@ -45,6 +45,7 @@ library
     , ghc-prim
     , primitive
     , singletons
+    , template-haskell
   default-language: Haskell2010
 
 executable lev-tolstoy-exe
@@ -62,6 +63,7 @@ executable lev-tolstoy-exe
     , lev-tolstoy
     , primitive
     , singletons
+    , template-haskell
   default-language: Haskell2010
 
 test-suite lev-tolstoy-test
@@ -82,6 +84,7 @@ test-suite lev-tolstoy-test
     , lev-tolstoy
     , primitive
     , singletons
+    , template-haskell
     , test-framework
     , test-framework-hunit
     , test-framework-quickcheck2
@@ -95,10 +98,11 @@ benchmark lev-tolstoy-bench
       Bench.Cereal
       Bench.Handwritten
       Bench.Lev
+      Bench.Lev.Reader.Static
       Paths_lev_tolstoy
   hs-source-dirs:
       bench
-  ghc-options: -main-is Bench.main -O2 -funbox-strict-fields -fmax-simplifier-iterations=6 -Wall
+  ghc-options: -main-is Bench.main -O2 -funbox-strict-fields -Wall
   build-depends:
       base
     , binary >=0.8.4.0
@@ -110,4 +114,5 @@ benchmark lev-tolstoy-bench
     , lev-tolstoy
     , primitive
     , singletons
+    , template-haskell
   default-language: Haskell2010

@@ -19,6 +19,7 @@ dependencies:
 - ghc-prim
 - primitive
 - singletons
+- template-haskell
 
 library:
   source-dirs: src
@@ -65,7 +66,6 @@ benchmarks:
     - -main-is Bench.main
     - -O2
     - -funbox-strict-fields
-    - -fmax-simplifier-iterations=6
     - -Wall
     dependencies:
     - base

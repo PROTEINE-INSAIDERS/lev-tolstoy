@@ -4,4 +4,4 @@ packages:
   - .
 
 ghc-options:
-  $everything: -j -fprint-explicit-kinds
+  $everything: -j -fprint-explicit-kinds -ddump-splices

@@ -8,22 +8,26 @@ import           Criterion.Main
 import           Data.ByteString   as BS
 import           Data.Int
 import           Data.Word
+import qualified Lev.Reader.Static as LS
+import qualified Bench.Lev.Reader.Static as LS
 
 readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
   where
     strict = bgroup "strict"
       [ read1Ginto12Int64plusInt32
-      , bigVsLittleEndian
-      , byteStrings
+    --  , bigVsLittleEndian
+    --  , byteStrings
       ]
       where
         read1Ginto12Int64plusInt32 = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
           [
-            bench "Handwritten" $ nf handwritten buffer, bench "Lev" $ nfIO $ levReader buffer
-          , bench "Binary" $ nf binary buffer
-          , bench "Cereal" $ nf cereal buffer
+            bench "Handwritten" $ nf handwritten buffer
+          , bench "Lev" $ nfIO $ levReader buffer
+       -- , bench "Binary" $ nf binary buffer
+       --   , bench "Cereal" $ nf cereal buffer
+          , bench "ls" $ nfIO $ ls buffer
           ]
           where
             {-# INLINE bufferSize #-}
@@ -64,6 +68,9 @@ readerBench = bgroup "reader" [ strict ]
 
             {-# NOINLINE cereal #-}
             cereal = run $ C.runCerealGetStrict C.read12Int64PlusInt32
+
+            {-# NOINLINE ls #-}
+            ls = runIO $ LS.readByteString LS.read12Int64PlusInt32
 
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
