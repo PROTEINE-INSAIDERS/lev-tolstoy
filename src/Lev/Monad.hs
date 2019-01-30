@@ -23,3 +23,4 @@ instance (Monad m) => LevMonad (Reader m p) where
   {-# INLINE (>>=) #-}
   return = unitReader
   {-# INLINE return #-}
+

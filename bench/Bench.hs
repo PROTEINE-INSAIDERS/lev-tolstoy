@@ -9,7 +9,9 @@ import           Data.ByteString   as BS
 import           Data.Int
 import           Data.Word
 import qualified Lev.Reader.Static as LS
+import qualified Lev.Reader.Static1 as LS1
 import qualified Bench.Lev.Reader.Static as LS
+import qualified Bench.Lev.Reader.Static1 as LS1
 
 readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
@@ -27,6 +29,7 @@ readerBench = bgroup "reader" [ strict ]
           , bench "Lev" $ nfIO $ levReader buffer
        -- , bench "Binary" $ nf binary buffer
        --   , bench "Cereal" $ nf cereal buffer
+          , bench "ls1" $ nfIO $ ls1 buffer
           , bench "ls" $ nfIO $ ls buffer
           ]
           where
@@ -71,6 +74,9 @@ readerBench = bgroup "reader" [ strict ]
 
             {-# NOINLINE ls #-}
             ls = runIO $ LS.readByteString LS.read12Int64PlusInt32
+
+            {-# NOINLINE ls1 #-}
+            ls1 = runIO $ LS1.readByteString LS1.read12Int64PlusInt32
 
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"

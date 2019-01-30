@@ -55,7 +55,7 @@ data Reader m p (l :: Layout) a where
   StaticReader :: !(Addr -> m a) -> Reader m p ('StaticLayout o s) a
   DynamicReader :: !(forall r . DynamicReaderState p -> DynamicReaderCont m p a r -> m (DynamicReaderResult m p r)) -> Reader m p 'DynamicLayout a
 
-type DynamicReaderState p = ( p, Addr, Int ) -- ^ (base pointer, current address, bytes read)
+type DynamicReaderState p = ( p, Addr, Int ) -- ^ (base pointer, current address, bytes remains in buffer)
 
 data DynamicReaderResult m p r = Done  r
                                | Fetch !Addr !Int (DynamicReaderState p -> m (DynamicReaderResult m p r))

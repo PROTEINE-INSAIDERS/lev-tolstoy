@@ -12,7 +12,7 @@ import           Data.Int
 import           Data.Word
 import           Foreign.ForeignPtr
 import           Lev.Layout         as L
-import           Lev.Monad          as L
+import           Lev.Monad         as L
 import           Prelude            hiding (Monad (..))
 import qualified Prelude            as P
 

@@ -65,7 +65,6 @@ benchmarks:
     ghc-options:
     - -main-is Bench.main
     - -O2
-    - -funbox-strict-fields
     - -Wall
     dependencies:
     - base

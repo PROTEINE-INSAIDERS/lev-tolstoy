@@ -9,7 +9,7 @@
            , FlexibleContexts
   #-}
 
-module Lev.Reader.Static where
+module Lev.Reader.Static1 where
 
 import           Control.Exception
 import           Control.Monad
@@ -30,16 +30,17 @@ import           GHC.Exts
 data Result a = Done !a
               | Fail !SomeException deriving (Show, Typeable)
 
+-- здесь мы передаём полный контекст в k, возможно это позволит избежать создания замыканий. 
 newtype Reader (o :: Nat) (s :: Nat) m a = Reader 
-    { runReader :: forall r . Addr -> (a -> m (Result r)) -> m (Result r) }
+    { runReader :: forall r . Addr -> (Addr -> a -> m (Result r)) -> m (Result r) }
 
 {-# INLINABLE pureReader #-}
 pureReader :: a -> Reader o 0 m a
-pureReader a = Reader $ \_ k -> k a
+pureReader a = Reader $ \addr k -> k addr a
 
 {-# INLINABLE bindReader #-}
 bindReader :: ((oa + sa) ~ ob) => (a -> Reader ob sb m b) -> Reader oa sa m a -> Reader oa (sa + sb) m b
-bindReader g (Reader f) = Reader $ \addr k -> f addr $ \a -> runReader (g a) addr k  
+bindReader g (Reader f) = Reader $ \addr k -> f addr $ \addr' a -> runReader (g a) addr' k  
 
 {-# INLINABLE (>>>=) #-}
 (>>>=) :: ((oa + sa) ~ ob) => Reader oa sa m a -> (a -> Reader ob sb m b) -> Reader oa (sa + sb) m b
@@ -54,7 +55,7 @@ readByteString (Reader f) bs = do
         rReq = fromIntegral (natVal $ sing @(o + s))
     when (bSize < rReq) $ error "bSize < rReq"
     res <- withForeignPtr bPtr $ \(Ptr bAddr) ->
-        f (Addr bAddr `plusAddr` (rOff + bOff)) (return . Done)
+        f (Addr bAddr `plusAddr` (rOff + bOff)) $ \_ a -> return $ Done a
     case res  of 
         Done a -> return (a, fromForeignPtr bPtr (bOff + rReq) (bSize - rReq))
         Fail e -> error "fail"
@@ -62,7 +63,7 @@ readByteString (Reader f) bs = do
 -- TODO: DO NOT EXPOSE!! (otherwise introduce sizeof which is not safe though)
 {-# INLINE readPrim #-}
 readPrim :: forall o s m a . (KnownNat o, PrimMonad m, Prim a) => Reader o s m a 
-readPrim = Reader $ \addr k -> readOffAddr (addr `plusAddr` off) 0 >>= k
+readPrim = Reader $ \addr k -> readOffAddr (addr `plusAddr` off) 0 >>= k addr
     where
         off = fromIntegral $ natVal $ sing @o
 
