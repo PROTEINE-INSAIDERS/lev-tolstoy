@@ -61,7 +61,7 @@ data DynamicReaderResult m p r = Done  r
                                | Fetch !Addr !Int (DynamicReaderState p -> m (DynamicReaderResult m p r))
 -- Fetch protocol:
 -- Reader should only fetch when it reuqires more data than available in buffer.
--- Driver should olways return no less data than was requested by buffer.
+-- Driver should always return no less data than was requested by buffer.
 -- Thus Fetch request during reading strict buffer indicates buffer exhaustion.
 
 type DynamicReaderCont m p a r = DynamicReaderState p -> a -> m ( DynamicReaderResult m p r )

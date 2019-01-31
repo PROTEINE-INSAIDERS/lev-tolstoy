@@ -19,13 +19,13 @@ import           Data.ByteString
 import           Data.ByteString.Internal
 import           Data.Int
 import           Data.Primitive
+import           Data.Primitive.Ptr
 import           Data.Singletons
 import           Data.Singletons.Prelude.Num
 import           Data.Singletons.TypeLits
 import           Data.Typeable
 import           Data.Word
 import           Foreign.ForeignPtr
-import           GHC.Exts
 
 data Result a = Done !a
               | Fail !SomeException deriving (Show, Typeable)

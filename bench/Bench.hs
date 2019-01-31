@@ -28,7 +28,7 @@ readerBench = bgroup "reader" [ strict ]
             bench "Handwritten" $ nf handwritten buffer
           , bench "Lev" $ nfIO $ levReader buffer
        -- , bench "Binary" $ nf binary buffer
-       --   , bench "Cereal" $ nf cereal buffer
+       -- , bench "Cereal" $ nf cereal buffer
           , bench "ls1" $ nfIO $ ls1 buffer
           , bench "ls" $ nfIO $ ls buffer
           ]
