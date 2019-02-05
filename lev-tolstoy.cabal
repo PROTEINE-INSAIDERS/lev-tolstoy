@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9c14045d9afb95ce11dac4d2d28d6b517f115768c3bde86e12864b5934b357f9
+-- hash: 4f64d70c5ec752285569e713151e6854a662171694cb0d70f20d58102c7e486a
 
 name:           lev-tolstoy
 version:        0.0.0.0
@@ -33,9 +33,12 @@ library
       Lev.Parser
       Lev.Reader
       Lev.Reader.Dynamic
+      Lev.Reader.Dynamic1
+      Lev.Reader.Dynamic2
       Lev.Reader.Static
       Lev.Reader.Static.Syntax
       Lev.Reader.Static1
+      Lev.Reader.Static2
       Lev.Writer
   other-modules:
       Paths_lev_tolstoy
@@ -101,12 +104,14 @@ benchmark lev-tolstoy-bench
       Bench.Cereal
       Bench.Handwritten
       Bench.Lev
+      Bench.Lev.Reader.Dynamic
+      Bench.Lev.Reader.Dynamic1
       Bench.Lev.Reader.Static
       Bench.Lev.Reader.Static1
       Paths_lev_tolstoy
   hs-source-dirs:
       bench
-  ghc-options: -main-is Bench.main -O2 -Wall
+  ghc-options: -main-is Bench.main -O2 -Wall -funbox-strict-fields -fmax-simplifier-iterations=6
   build-depends:
       base
     , binary >=0.8.4.0

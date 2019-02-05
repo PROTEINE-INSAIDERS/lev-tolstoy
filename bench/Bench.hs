@@ -9,7 +9,11 @@ import           Data.ByteString   as BS
 import           Data.Int
 import           Data.Word
 import qualified Lev.Reader.Static as LS
+import qualified Lev.Reader.Dynamic as LD
+import qualified Lev.Reader.Dynamic1 as LD1
 import qualified Lev.Reader.Static1 as LS1
+import qualified Bench.Lev.Reader.Dynamic as LD
+import qualified Bench.Lev.Reader.Dynamic1 as LD1
 import qualified Bench.Lev.Reader.Static as LS
 import qualified Bench.Lev.Reader.Static1 as LS1
 
@@ -26,16 +30,18 @@ readerBench = bgroup "reader" [ strict ]
           bgroup "read 1G into 12 int64 + int32"
           [
             bench "Handwritten" $ nf handwritten buffer
-          , bench "Lev" $ nfIO $ levReader buffer
-       -- , bench "Binary" $ nf binary buffer
+       -- , bench "Lev" $ nfIO $ levReader buffer
+          , bench "Binary" $ nf binary buffer
        -- , bench "Cereal" $ nf cereal buffer
-          , bench "ls1" $ nfIO $ ls1 buffer
-          , bench "ls" $ nfIO $ ls buffer
+       -- , bench "ls1" $ nfIO $ ls1 buffer
+       -- , bench "ls" $ nfIO $ ls buffer
+          , bench "ld" $ nfIO $ ld buffer
+          , bench "ld1" $ nfIO $ ld1 buffer
           ]
           where
             {-# INLINE bufferSize #-}
             bufferSize :: Int
-            bufferSize = 1000000000
+            bufferSize = 100000000 -- 1000000000
 
             {-# INLINE iterations #-}
             iterations :: Int
@@ -77,6 +83,12 @@ readerBench = bgroup "reader" [ strict ]
 
             {-# NOINLINE ls1 #-}
             ls1 = runIO $ LS1.readByteString LS1.read12Int64PlusInt32
+
+            {-# NOINLINE ld #-}
+            ld = runIO $ LD.readByteString LD.read12Int64PlusInt32
+
+            {-# NOINLINE ld1 #-}
+            ld1 = runIO $ LD1.readByteString LD1.read12Int64PlusInt32
 
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"

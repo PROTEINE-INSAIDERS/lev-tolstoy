@@ -9,7 +9,7 @@
            , FlexibleContexts
   #-}
 
-module Lev.Reader.Static where
+module Lev.Reader.Static2 where
 
 import           Control.Exception
 import           Control.Monad
@@ -27,11 +27,13 @@ import           Data.Typeable
 import           Data.Word
 import           Foreign.ForeignPtr
 
-data Result a = Done !a
-              | Fail !SomeException deriving (Show, Typeable)
+-- попытка убрать монаду из k
+
+data Result m a = Done !(m a)
+                | Fail !SomeException deriving (Show, Typeable)
 
 newtype Reader (o :: Nat) (s :: Nat) m a = Reader 
-    { runReader :: forall r . Addr -> (a -> m (Result r)) -> m (Result r) }
+    { runReader :: forall r . Addr -> (a -> Result m r) -> Result m r }
 
 {-# INLINABLE pureReader #-}
 pureReader :: a -> Reader o 0 m a
@@ -53,11 +55,14 @@ readByteString (Reader f) bs = do
         rOff = fromIntegral (natVal $ sing @o)
         rReq = fromIntegral (natVal $ sing @(o + s))
     when (bSize < rReq) $ error "bSize < rReq"
-    res <- withForeignPtr bPtr $ \(Ptr bAddr) ->
-        f (Addr bAddr `plusAddr` (rOff + bOff)) (return . Done)
-    case res  of 
-        Done a -> return (a, fromForeignPtr bPtr (bOff + rReq) (bSize - rReq))
-        Fail e -> throwIO e
+    withForeignPtr bPtr $ \(Ptr bAddr) -> do 
+        let res = f (Addr bAddr `plusAddr` (rOff + bOff)) (Done . return)
+        case res  of 
+            Done a -> a >>= \a' -> return (a', fromForeignPtr bPtr (bOff + rReq) (bSize - rReq))
+            Fail e -> throwIO e
+
+{- это не работает, потому что в примитивном ридере мы должны прочитать значение 
+   в монаде, перед тем, как вызвать k. Рабочие варианты - это Static и Static1
 
 -- TODO: DO NOT EXPOSE!! (otherwise introduce sizeof which is not safe though)
 {-# INLINE prim #-}
@@ -84,3 +89,4 @@ PRIM(readInt8, Int8, SIZEOF_INT8)
 PRIM(readInt16, Int16, SIZEOF_INT16)
 PRIM(readInt32, Int32, SIZEOF_INT32)
 PRIM(readInt64, Int64, SIZEOF_INT64)
+-}

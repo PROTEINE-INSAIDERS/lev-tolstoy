@@ -30,28 +30,34 @@ type DriverCall m p c a = c -> Int -> (p -> c -> Addr -> m (Result a)) ->  m (Re
 newtype Reader m p c a = Reader 
     { runReader :: forall r . DriverCall m p c r -> c -> (c -> a -> m (Result r)) -> m (Result r) }
 
-{-# INLINABLE readStatic #-}
-readStatic :: forall s m p c a . (KnownNat s) => Static.Reader 0 s m a -> Reader m p c a
-readStatic (Static.Reader f) = Reader $ \drv ctx k -> 
+{-# INLINABLE static #-}
+static :: forall s m p c a . (KnownNat s) => Static.Reader 0 s m a -> Reader m p c a
+static (Static.Reader f) = Reader $ \drv ctx k -> 
     drv ctx (fromIntegral $ natVal $ sing @s) $ \_ ctx' addr -> 
         f addr $ \a -> 
             k ctx' a
 
-runByteString :: Reader IO (ForeignPtr Word8) Addr a -> ByteString -> IO (a, ByteString)
-runByteString (Reader f) bs = do
+{-# INLINABLE readByteString #-}
+readByteString :: Reader IO (ForeignPtr Word8) Addr a -> ByteString -> IO (a, ByteString)
+readByteString (Reader f) bs = do
     let (bPtr, bOff, bSize) = toForeignPtr bs
     withForeignPtr bPtr $ \(Ptr bAddr) -> do
         let startAddr = Addr bAddr `plusAddr` bOff
             maxAddr = startAddr `plusAddr` bSize
             drv addr requires k = do
                 let nextAddr = addr `plusAddr` requires
-                if nextAddr <= maxAddr 
+                if nextAddr <= maxAddr
                     then k bPtr nextAddr addr
-                    else error "EOS" -- return $ Fail ...
+                    else error ("EOS: " ++ (show maxAddr) ++ " " ++ (show nextAddr)) -- return $ Fail ...
         res <- f drv startAddr (\endAddr a -> return $ Done (a, endAddr))
         case res of 
-            Done (a, endAddr) -> return (a, undefined) -- return (a, fromForeignPtr bPtr (bOff + rReq) (bSize - rReq))
-            Fail e -> error "fail"
+            Done (a, endAddr) -> do
+                let newOff = endAddr `minusAddr` Addr bAddr
+                    newSize = bSize - (newOff - bOff)
+--                Prelude.putStrLn $ "bPtr: " ++ (show bPtr) ++ " bOff: " ++ (show bOff) ++ " bSize: " ++ (show bSize)
+--                        ++ " newOff: " ++ (show newOff) ++ " newSize: " ++ (show newSize)
+                return (a, fromForeignPtr bPtr newOff newSize) -- return (a, fromForeignPtr bPtr (bOff + rReq) (bSize - rReq))
+            Fail e -> throwIO e
 
 {--
 type State p = (p, Addr, Int) -- ^ ( current address, bytes remain in buffer )

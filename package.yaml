@@ -66,6 +66,8 @@ benchmarks:
     - -main-is Bench.main
     - -O2
     - -Wall
+    - -funbox-strict-fields 
+    - -fmax-simplifier-iterations=6 
     dependencies:
     - base
     - binary >= 0.8.4.0
