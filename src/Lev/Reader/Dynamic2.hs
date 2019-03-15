@@ -29,7 +29,7 @@ data DriverCall s m a where
 data Result a = Done !a
 
 newtype Reader m s a = Reader 
-    { runReader :: forall r . s -> (s -> a -> m (Result r)) -> Result r }
+    { runReader :: forall r . s -> (s -> a -> m (Result r)) -> m (Result r) }
 
 driver :: DriverCall s m a -> m (Result a)
 driver (ByteStringCall (ByteStringState addr maxAddr) req k) =
@@ -44,15 +44,15 @@ readByteString (Reader f) bs = do
     withForeignPtr bPtr $ \(Ptr bAddr) -> do
         let startAddr = Addr bAddr `plusAddr` bOff
             maxAddr = startAddr `plusAddr` bSize
-      --  res <- f (ByteStringState addr maxAddr) (\(ByteStringState endAddr _)
+        res <- f (ByteStringState startAddr maxAddr) (\(ByteStringState e _) a -> return $ Done (a, e))
+        case res of 
+            Done (a, endAddr) -> do
+                let newOff = endAddr `minusAddr` Addr bAddr
+                    newSize = bSize - (newOff - bOff)
+                return (a, fromForeignPtr bPtr newOff newSize) 
 
-        undefined
-    undefined
---driver  = 
---    let nextAddr = addr `plusAddr` req
- --   in if nextAddr <= maxAddr
---        then k (ByteStringState nextAddr maxAddr )
---        else error ("EOS: " ++ (show maxAddr) ++ " " ++ (show nextAddr)) -- Failed
-
+-- Здесь нужно вызывать драйвер для получения адреса, для этого в функцию надо статически передать 
+-- функцию вызова драйвера. Это можно сделать с помощью тайпкласса и специализации, как это делать на 
+-- GADT - не ясно, т.к. мы не знаем, какой из конструкторов GADT использовать. 
 -- static :: forall s m a . (KnownNat s) => Static.Reader 0 s m a -> Reader m a
 -- static (Static.Reader f) = Reader $ \d k -> undefined  
