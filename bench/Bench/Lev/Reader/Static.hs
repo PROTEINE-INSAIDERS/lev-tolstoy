@@ -3,6 +3,7 @@
 module Bench.Lev.Reader.Static where
 
 import Data.Int
+import Data.Word
 import Lev.Reader.Static.Syntax
 import           Prelude            hiding (Monad (..))
 
@@ -26,3 +27,24 @@ read12Int64PlusInt32 = do
             + a5 + a6 + a7 + a8
             + a9 + a10 + a11 + a12
             + fromIntegral a13)
+
+getWord64N16Host :: Reader 0 128 IO Word64
+getWord64N16Host = do
+    s0 <- readWord64
+    s1 <- readWord64
+    s2 <- readWord64
+    s3 <- readWord64
+    s4 <- readWord64
+    s5 <- readWord64
+    s6 <- readWord64
+    s7 <- readWord64
+    s8 <- readWord64
+    s9 <- readWord64
+    s10 <- readWord64
+    s11 <- readWord64
+    s12 <- readWord64
+    s13 <- readWord64
+    s14 <- readWord64
+    s15 <- readWord64
+    return (s0+s1+s2+s3+s4+s5+s6+s7+s9+s10+s11+s12+s13+s14+s15)
+    

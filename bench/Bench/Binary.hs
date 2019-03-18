@@ -8,6 +8,7 @@ module Bench.Binary (
 import           Data.Binary.Get as X
 import           Data.ByteString as BS
 import           Data.Int
+import           Data.Word
 
 {-# INLINE runBinaryGetStrict #-}
 runBinaryGetStrict :: Get a -> ByteString -> (a, ByteString)
@@ -51,3 +52,26 @@ read4Strings = do
   b4 <- getByteString (fromIntegral a4)
   return (BS.length b1 + BS.length b2 + BS.length b3 + BS.length b4)
 {-# INLINE read4Strings #-}
+
+getWord64N16Host :: Int -> Get Word64
+getWord64N16Host = loop 0
+  where loop s n | s `seq` n `seq` False = undefined
+        loop s 0 = return s
+        loop s n = do
+          s0 <- getWord64host
+          s1 <- getWord64host
+          s2 <- getWord64host
+          s3 <- getWord64host
+          s4 <- getWord64host
+          s5 <- getWord64host
+          s6 <- getWord64host
+          s7 <- getWord64host
+          s8 <- getWord64host
+          s9 <- getWord64host
+          s10 <- getWord64host
+          s11 <- getWord64host
+          s12 <- getWord64host
+          s13 <- getWord64host
+          s14 <- getWord64host
+          s15 <- getWord64host
+          loop (s+s0+s1+s2+s3+s4+s5+s6+s7+s9+s10+s11+s12+s13+s14+s15) (n-16)

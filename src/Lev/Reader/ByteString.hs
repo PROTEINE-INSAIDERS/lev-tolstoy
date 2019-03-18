@@ -7,6 +7,7 @@ import           Data.Primitive.Ptr
 import           Data.Typeable
 import           Data.Word
 import           Foreign.ForeignPtr
+import           Foreign.ForeignPtr.Unsafe
 import           Lev.Reader.Cursor
 import           Lev.Reader.Dynamic
 import           UnliftIO.Exception
@@ -19,14 +20,22 @@ instance Exception ByteStringError
 
 instance Cursor ByteStringCursor where
     {-# INLINE consume #-}
-    consume (ByteStringCursor bPtr currentAddr maxAddr) required k =
-        let nextAddr = currentAddr `plusAddr` required
-        in
-            if nextAddr <= maxAddr
+    -- consume :: (PrimMonad m) => ByteStringCursor -> Int -> (ByteStringCursor -> Addr -> m (Result a)) -> m (Result a)
+    consume (ByteStringCursor bPtr currentAddr maxAddr) size k =
+        let nextAddr = currentAddr `plusAddr` size
+         in if nextAddr <= maxAddr
                 then k (ByteStringCursor bPtr nextAddr maxAddr) currentAddr
                 else
                     return $ Fail
                         (toException $ ByteStringOverflow nextAddr maxAddr)
+
+instance ConsumeBytestring ByteStringCursor where
+    -- consumeBytestring :: (PrimMonad m) => ByteStringCursor -> Int -> (ByteStringCursor -> ByteString -> m (Result a)) -> m (Result a)
+    consumeBytestring cursor size k = 
+        consume cursor size $ \c@(ByteStringCursor bPtr _ _) addr -> do
+            let (Ptr bAddr) = unsafeForeignPtrToPtr bPtr -- эта функция всегда вызывается из withForeignPtr
+                off = addr `minusAddr` Addr bAddr
+            k c $ fromForeignPtr bPtr off size
 
 runByteString :: Reader ByteStringCursor IO a -> ByteString -> IO (a, ByteString)
 runByteString (Reader f) bs = do 

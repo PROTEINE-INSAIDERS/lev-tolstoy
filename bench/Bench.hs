@@ -18,11 +18,24 @@ readerBench = bgroup "reader" [ strict ]
   where
     strict = bgroup "strict"
       [ read1Ginto12Int64plusInt32
+      , readWord64N16Host
     --  , bigVsLittleEndian
     --  , byteStrings
       ]
       where
-        read1Ginto12Int64plusInt32 = env setupEnv $ \ ~buffer ->
+        readWord64N16Host =  env setupWord64N16Host $ \ ~buffer ->
+          bgroup "readWord64N16Host"
+          [
+
+          ]
+        where 
+          setupWord64N16Host :: IO ByteString
+          setupWord64N16Host = return $ BS.replicate buffer1G (1073741824)
+
+          iterations = 1073741824 `div` 
+
+
+        read1Ginto12Int64plusInt32 = env setup1G $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
           [
             bench "Handwritten" $ nf handwritten buffer
@@ -32,16 +45,15 @@ readerBench = bgroup "reader" [ strict ]
           , bench "Lev dynamic" $ nfIO $ ld buffer
           ]
           where
-            {-# INLINE bufferSize #-}
-            bufferSize :: Int
-            bufferSize = 100000000 -- 1000000000
+            buffer1G :: Int
+            buffer1G = 100000000 -- 1000000000
 
             {-# INLINE iterations #-}
             iterations :: Int
-            iterations = bufferSize `div` 100
+            iterations = buffer1G `div` 100
 
-            setupEnv :: IO ByteString
-            setupEnv = return $ BS.replicate bufferSize 0
+            setup1G :: IO ByteString
+            setup1G = return $ BS.replicate buffer1G 0
 
             {-# INLINE run #-}
             run :: (ByteString -> (Int64, ByteString)) -> ByteString -> Int64
