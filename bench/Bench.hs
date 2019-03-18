@@ -11,9 +11,11 @@ import           Data.Word
 import qualified Lev.Reader.Static as LS
 import qualified Lev.Reader.Dynamic as LD
 import qualified Lev.Reader.Dynamic1 as LD1
+import qualified Lev.Reader.Dynamic2 as LD2
 import qualified Lev.Reader.Static1 as LS1
 import qualified Bench.Lev.Reader.Dynamic as LD
 import qualified Bench.Lev.Reader.Dynamic1 as LD1
+import qualified Bench.Lev.Reader.Dynamic2 as LD2
 import qualified Bench.Lev.Reader.Static as LS
 import qualified Bench.Lev.Reader.Static1 as LS1
 
@@ -37,6 +39,7 @@ readerBench = bgroup "reader" [ strict ]
        -- , bench "ls" $ nfIO $ ls buffer
           , bench "ld" $ nfIO $ ld buffer
           , bench "ld1" $ nfIO $ ld1 buffer
+          , bench "ld2" $ nfIO $ ld2 buffer
           ]
           where
             {-# INLINE bufferSize #-}
@@ -89,6 +92,9 @@ readerBench = bgroup "reader" [ strict ]
 
             {-# NOINLINE ld1 #-}
             ld1 = runIO $ LD1.readByteString LD1.read12Int64PlusInt32
+
+            {-# NOINLINE ld2 #-}
+            ld2 = runIO $ LD2.readByteString LD2.read12Int64PlusInt32
 
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"

@@ -21,22 +21,48 @@ import           Control.Monad.ST
 -- 1. функции должны быть верхнеуровневыми и не должны захватывать переменные из лексического окружения. 
 -- 2. диспетчирование должно выполняться статически. 
 
-data ByteStringState = ByteStringState !Addr !Addr
-
 data DriverCall s m a where
     ByteStringCall :: ByteStringState -> Int -> (ByteStringState -> Addr -> m (Result a)) -> DriverCall ByteStringState m a
 
 data Result a = Done !a
+              | Fail !SomeException deriving (Show, Typeable)
 
+class Driver s where
+    -- TODO: возможно в более сложном случае монадку надо будет вытащить в ассоциированное семейство.
+    consume :: (Monad m) => s -> Int -> (s -> Addr -> m (Result a)) -> m (Result a)
+
+data ByteStringState = ByteStringState 
+    !Addr -- ^ Current addr
+    !Addr -- ^ Max addr
+
+data ByteStringDriverError = EndOfStream !Addr !Addr deriving (Show)
+
+instance Exception ByteStringDriverError
+
+instance Driver ByteStringState where 
+    consume (ByteStringState addr maxAddr) req k = 
+        let nextAddr = addr `plusAddr` req
+        in if nextAddr <= maxAddr
+            then k (ByteStringState nextAddr maxAddr) addr 
+            else return $ Fail (toException $ EndOfStream nextAddr maxAddr)    
+    
 newtype Reader m s a = Reader 
     { runReader :: forall r . s -> (s -> a -> m (Result r)) -> m (Result r) }
 
-driver :: DriverCall s m a -> m (Result a)
-driver (ByteStringCall (ByteStringState addr maxAddr) req k) =
-    let nextAddr = addr `plusAddr` req
-    in if nextAddr <= maxAddr
-        then k (ByteStringState nextAddr maxAddr) addr 
-        else error ("EOS: " ++ (show maxAddr) ++ " " ++ (show nextAddr))    
+
+-- f :: forall r . Addr -> (a -> m (Result r)) -> m (Result r)
+static :: forall s drv m a . ( Driver drv, Monad m, KnownNat s ) => Static.Reader 0 s m a -> Reader m drv a
+static (Static.Reader f) = Reader $ \s0 k -> do 
+    let size = fromIntegral (natVal $ sing @s)
+    consume s0 size $ \s1 addr -> do 
+        r <- f addr $ \a -> do
+            r0 <- k s1 a
+            case r0 of 
+                Done a  -> return $ Static.Done a
+                Fail e -> return $ Static.Fail e
+        case r of 
+            Static.Done a -> return $ Done a
+            Static.Fail e -> return $ Fail e 
 
 readByteString :: Reader IO ByteStringState a -> ByteString -> IO (a, ByteString)
 readByteString (Reader f) bs = do 
