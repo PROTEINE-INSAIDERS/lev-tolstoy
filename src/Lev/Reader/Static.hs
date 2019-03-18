@@ -1,6 +1,5 @@
 {-# LANGUAGE CPP
            , DataKinds
-           , KindSignatures
            , RankNTypes
            , ScopedTypeVariables
            , TypeFamilies
@@ -9,9 +8,10 @@
            , FlexibleContexts
   #-}
 
-module Lev.Reader.Static where
+module Lev.Reader.Static ( X.Result(..)
+                         , module Lev.Reader.Static
+                         ) where
 
-import           Control.Exception
 import           Control.Monad
 import           Control.Monad.Primitive
 import           Control.Monad.ST
@@ -26,9 +26,8 @@ import           Data.Singletons.TypeLits
 import           Data.Typeable
 import           Data.Word
 import           Foreign.ForeignPtr
-
-data Result a = Done !a
-              | Fail !SomeException deriving (Show, Typeable)
+import           Lev.Reader.Result as X
+import           UnliftIO.Exception
 
 newtype Reader (o :: Nat) (s :: Nat) m a = Reader 
     { runReader :: forall r . Addr -> (a -> m (Result r)) -> m (Result r) }
@@ -46,7 +45,8 @@ bindReader g (Reader f) = Reader $ \addr k -> f addr $ \a -> runReader (g a) add
 (>>>=) = flip bindReader
 
 {-# INLINABLE readByteString #-}
--- TODO: переименовать. 
+-- TODO: Переименовать или вообще удалить. Для запуска статического ридера его надо сначала конвертировать в динамический, 
+-- потом использовать специализированную запускалку.
 readByteString :: forall o s a . ( KnownNat o, KnownNat (o + s) ) => Reader o s IO a -> ByteString -> IO (a, ByteString)
 readByteString (Reader f) bs = do
     let (bPtr, bOff, bSize) = toForeignPtr bs

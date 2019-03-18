@@ -3,21 +3,15 @@ module Bench where
 import qualified Bench.Binary      as B
 import qualified Bench.Cereal      as C
 import qualified Bench.Handwritten as H
-import qualified Bench.Lev         as L
 import           Criterion.Main
 import           Data.ByteString   as BS
 import           Data.Int
 import           Data.Word
 import qualified Lev.Reader.Static as LS
 import qualified Lev.Reader.Dynamic as LD
-import qualified Lev.Reader.Dynamic1 as LD1
-import qualified Lev.Reader.Dynamic2 as LD2
-import qualified Lev.Reader.Static1 as LS1
 import qualified Bench.Lev.Reader.Dynamic as LD
-import qualified Bench.Lev.Reader.Dynamic1 as LD1
-import qualified Bench.Lev.Reader.Dynamic2 as LD2
 import qualified Bench.Lev.Reader.Static as LS
-import qualified Bench.Lev.Reader.Static1 as LS1
+import qualified Lev.Reader.ByteString as LD
 
 readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
@@ -32,14 +26,10 @@ readerBench = bgroup "reader" [ strict ]
           bgroup "read 1G into 12 int64 + int32"
           [
             bench "Handwritten" $ nf handwritten buffer
-       -- , bench "Lev" $ nfIO $ levReader buffer
           , bench "Binary" $ nf binary buffer
        -- , bench "Cereal" $ nf cereal buffer
-       -- , bench "ls1" $ nfIO $ ls1 buffer
-       -- , bench "ls" $ nfIO $ ls buffer
-          , bench "ld" $ nfIO $ ld buffer
-          , bench "ld1" $ nfIO $ ld1 buffer
-          , bench "ld2" $ nfIO $ ld2 buffer
+          , bench "Lev static" $ nfIO $ ls buffer
+          , bench "Lev dynamic" $ nfIO $ ld buffer
           ]
           where
             {-# INLINE bufferSize #-}
@@ -72,9 +62,6 @@ readerBench = bgroup "reader" [ strict ]
             {-# NOINLINE handwritten #-}
             handwritten = run H.read12Int64PlusInt32
 
-            {-# NOINLINE levReader #-}
-            levReader = runIO $ L.runReaderWithByteString L.read12Int64PlusInt32
-
             {-# NOINLINE binary #-}
             binary = run $ B.runBinaryGetStrict B.read12Int64PlusInt32
 
@@ -84,17 +71,8 @@ readerBench = bgroup "reader" [ strict ]
             {-# NOINLINE ls #-}
             ls = runIO $ LS.readByteString LS.read12Int64PlusInt32
 
-            {-# NOINLINE ls1 #-}
-            ls1 = runIO $ LS1.readByteString LS1.read12Int64PlusInt32
-
             {-# NOINLINE ld #-}
-            ld = runIO $ LD.readByteString LD.read12Int64PlusInt32
-
-            {-# NOINLINE ld1 #-}
-            ld1 = runIO $ LD1.readByteString LD1.read12Int64PlusInt32
-
-            {-# NOINLINE ld2 #-}
-            ld2 = runIO $ LD2.readByteString LD2.read12Int64PlusInt32
+            ld = runIO $ LD.runByteString LD.read12Int64PlusInt32
 
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
@@ -122,8 +100,8 @@ readerBench = bgroup "reader" [ strict ]
 
         byteStrings = env setupEnv $ \ ~buffer ->
           bgroup "read 100M into 4x25byte strings"
-          [ bench "Lev" $ nfIO $ levReader buffer
-          , bench "Binary" $ nf binary buffer
+          [ 
+            bench "Binary" $ nf binary buffer
           ]
           where
             bufferSize :: Int
@@ -156,9 +134,6 @@ readerBench = bgroup "reader" [ strict ]
                 go a n s = do
                   (a', s') <- f s
                   go (a + a') (n - 1) s'
-
-            {-# NOINLINE levReader #-}
-            levReader = runIO $ L.runReaderWithByteString L.read4Strings
 
             {-# NOINLINE binary #-}
             binary = run $ B.runBinaryGetStrict B.read4Strings

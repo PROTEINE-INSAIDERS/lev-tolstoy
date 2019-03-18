@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds, NoImplicitPrelude, RebindableSyntax #-}
+{-# LANGUAGE DataKinds, RebindableSyntax #-}
 
 module Bench.Lev.Reader.Static where
 

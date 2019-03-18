@@ -19,7 +19,7 @@ dependencies:
 - ghc-prim
 - primitive
 - singletons
-- template-haskell
+- unliftio
 
 library:
   source-dirs: src
@@ -32,12 +32,12 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wall
     dependencies:
     - base
     - lev-tolstoy
     - bytestring
     - ghc-prim
-    - lev-tolstoy
     - primitive
 
 tests:
@@ -67,7 +67,6 @@ benchmarks:
     - -O2
     - -Wall
     - -funbox-strict-fields 
-    - -fmax-simplifier-iterations=6 
     dependencies:
     - base
     - binary >= 0.8.4.0
