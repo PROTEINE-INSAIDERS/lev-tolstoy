@@ -23,10 +23,10 @@ import           Data.Primitive.Ptr
 import           Data.Singletons
 import           Data.Singletons.Prelude.Num
 import           Data.Singletons.TypeLits
-import           Data.Typeable
 import           Data.Word
 import           Foreign.ForeignPtr
 import           Lev.Reader.Result as X
+import           System.Endian
 import           UnliftIO.Exception
 
 newtype Reader (o :: Nat) (s :: Nat) m a = Reader 
@@ -43,6 +43,10 @@ bindReader g (Reader f) = Reader $ \addr k -> f addr $ \a -> runReader (g a) add
 {-# INLINABLE (>>>=) #-}
 (>>>=) :: ((oa + sa) ~ ob) => Reader oa sa m a -> (a -> Reader ob sb m b) -> Reader oa (sa + sb) m b
 (>>>=) = flip bindReader
+
+instance Functor (Reader (o :: Nat) (s :: Nat) m) where 
+    {-# INLINABLE fmap #-}
+    fmap f = bindReader (pureReader . f)
 
 {-# INLINABLE readByteString #-}
 -- TODO: Переименовать или вообще удалить. Для запуска статического ридера его надо сначала конвертировать в динамический, 
@@ -84,3 +88,35 @@ PRIM(readInt8, Int8, SIZEOF_INT8)
 PRIM(readInt16, Int16, SIZEOF_INT16)
 PRIM(readInt32, Int32, SIZEOF_INT32)
 PRIM(readInt64, Int64, SIZEOF_INT64)
+
+#define PRIMW(F,A,S,E) \
+{-# INLINABLE F #-}; \
+{-# SPECIALISE F :: (KnownNat o) => Reader o S IO A #-}; \
+{-# SPECIALISE F :: (KnownNat o) => Reader o S (ST s) A #-}; \
+F :: forall o m . (KnownNat o, PrimMonad m) => Reader o S m A; \
+F = E <$> prim
+
+PRIMW(readWord16le, Word16, SIZEOF_WORD16, fromLE16)
+PRIMW(readWord16be, Word16, SIZEOF_WORD16, fromBE16)
+
+PRIMW(readWord32le, Word32, SIZEOF_WORD32, fromLE32)
+PRIMW(readWord32be, Word32, SIZEOF_WORD32, fromBE32)
+
+PRIMW(readWord64le, Word64, SIZEOF_WORD64, fromLE64)
+PRIMW(readWord64be, Word64, SIZEOF_WORD64, fromBE64)
+
+#define PRIMI(F,A,S,E) \
+{-# INLINABLE F #-}; \
+{-# SPECIALISE F :: (KnownNat o) => Reader o S IO A #-}; \
+{-# SPECIALISE F :: (KnownNat o) => Reader o S (ST s) A #-}; \
+F :: forall o m . (KnownNat o, PrimMonad m) => Reader o S m A; \
+F = fromIntegral . E <$> prim
+
+PRIMI(readInt16le, Int16, SIZEOF_INT16, fromLE16)
+PRIMI(readInt16be, Int16, SIZEOF_INT16, fromBE16)
+
+PRIMI(readInt32le, Int32, SIZEOF_INT32, fromLE32)
+PRIMI(readInt32be, Int32, SIZEOF_INT32, fromBE32)
+
+PRIMI(readInt64le, Int64, SIZEOF_INT64, fromLE64)
+PRIMI(readInt64be, Int64, SIZEOF_INT64, fromBE64)

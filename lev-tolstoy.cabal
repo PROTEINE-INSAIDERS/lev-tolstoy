@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d6286cbdcf916e7db64623dcda8abf49b730f3cb24beb78bf172a348880038df
+-- hash: 95ebb4c593cb2f90b81add8a004448ab9e1b3dbf2a689a054907fe037c2f01c4
 
 name:           lev-tolstoy
 version:        0.0.0.0
@@ -47,12 +47,13 @@ library
     , unliftio
   default-language: Haskell2010
 
-executable lev-tolstoy-exe
+executable fastgraph
   main-is: Main.hs
   other-modules:
+      OffHeapHashMap
       Paths_lev_tolstoy
   hs-source-dirs:
-      app
+      examples/fastgraph
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       base
@@ -60,9 +61,11 @@ executable lev-tolstoy-exe
     , cpu
     , ghc-prim
     , lev-tolstoy
+    , murmur3
     , primitive
     , singletons
     , unliftio
+    , utf8-string
   default-language: Haskell2010
 
 test-suite lev-tolstoy-test

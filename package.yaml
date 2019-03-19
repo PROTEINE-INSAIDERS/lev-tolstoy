@@ -25,9 +25,9 @@ library:
   source-dirs: src
 
 executables:
-  lev-tolstoy-exe:
+  fastgraph:
     main:                Main.hs
-    source-dirs:         app
+    source-dirs:         examples/fastgraph
     ghc-options:
     - -threaded
     - -rtsopts
@@ -35,10 +35,10 @@ executables:
     - -Wall
     dependencies:
     - base
-    - lev-tolstoy
     - bytestring
-    - ghc-prim
-    - primitive
+    - lev-tolstoy
+    - murmur3
+    - utf8-string
 
 tests:
   lev-tolstoy-test:
