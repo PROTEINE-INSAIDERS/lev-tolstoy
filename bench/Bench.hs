@@ -3,39 +3,58 @@ module Bench where
 import qualified Bench.Binary      as B
 import qualified Bench.Cereal      as C
 import qualified Bench.Handwritten as H
-import qualified Bench.Lev         as L
 import           Criterion.Main
 import           Data.ByteString   as BS
+import qualified Data.ByteString.Lazy as BSL
 import           Data.Int
 import           Data.Word
+import qualified Lev.Reader.Static as LS
+import qualified Lev.Reader.Dynamic as LD
+import qualified Bench.Lev.Reader.Dynamic as LD
+import qualified Bench.Lev.Reader.Static as LS
+import qualified Lev.Reader.ByteString as LD
 
 readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
   where
     strict = bgroup "strict"
       [ read1Ginto12Int64plusInt32
-      , bigVsLittleEndian
-      , byteStrings
+      , readWord64N16Host
+    --  , bigVsLittleEndian
+    --  , byteStrings
       ]
       where
-        read1Ginto12Int64plusInt32 = env setupEnv $ \ ~buffer ->
+        readWord64N16Host =  env setupWord64N16Host $ \ ~buffer ->
+          bgroup "readWord64N16Host"
+          [ bench "binary"  $ nf (B.runGet $ B.getWord64N16Host iterations) (BSL.fromStrict buffer) 
+          , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host iterations) buffer
+          ]
+          where 
+            size = 1073741824
+            iterations = size `div` 128
+
+            setupWord64N16Host :: IO ByteString
+            setupWord64N16Host = return $ BS.replicate size 0
+
+        read1Ginto12Int64plusInt32 = env setup1G $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
           [
-            bench "Handwritten" $ nf handwritten buffer, bench "Lev" $ nfIO $ levReader buffer
+            bench "Handwritten" $ nf handwritten buffer
           , bench "Binary" $ nf binary buffer
-          , bench "Cereal" $ nf cereal buffer
+       -- , bench "Cereal" $ nf cereal buffer
+          , bench "Lev static" $ nfIO $ ls buffer
+          , bench "Lev dynamic" $ nfIO $ ld buffer
           ]
           where
-            {-# INLINE bufferSize #-}
-            bufferSize :: Int
-            bufferSize = 1000000000
+            buffer1G :: Int
+            buffer1G = 100000000 
 
             {-# INLINE iterations #-}
             iterations :: Int
-            iterations = bufferSize `div` 100
+            iterations = buffer1G `div` 100
 
-            setupEnv :: IO ByteString
-            setupEnv = return $ BS.replicate bufferSize 0
+            setup1G :: IO ByteString
+            setup1G = return $ BS.replicate buffer1G 0
 
             {-# INLINE run #-}
             run :: (ByteString -> (Int64, ByteString)) -> ByteString -> Int64
@@ -56,14 +75,17 @@ readerBench = bgroup "reader" [ strict ]
             {-# NOINLINE handwritten #-}
             handwritten = run H.read12Int64PlusInt32
 
-            {-# NOINLINE levReader #-}
-            levReader = runIO $ L.runReaderWithByteString L.read12Int64PlusInt32
-
             {-# NOINLINE binary #-}
             binary = run $ B.runBinaryGetStrict B.read12Int64PlusInt32
 
             {-# NOINLINE cereal #-}
             cereal = run $ C.runCerealGetStrict C.read12Int64PlusInt32
+
+            {-# NOINLINE ls #-}
+            ls = runIO $ LS.readByteString LS.read12Int64PlusInt32
+
+            {-# NOINLINE ld #-}
+            ld = runIO $ LD.runByteString LD.read12Int64PlusInt32
 
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
@@ -91,8 +113,8 @@ readerBench = bgroup "reader" [ strict ]
 
         byteStrings = env setupEnv $ \ ~buffer ->
           bgroup "read 100M into 4x25byte strings"
-          [ bench "Lev" $ nfIO $ levReader buffer
-          , bench "Binary" $ nf binary buffer
+          [ 
+            bench "Binary" $ nf binary buffer
           ]
           where
             bufferSize :: Int
@@ -125,9 +147,6 @@ readerBench = bgroup "reader" [ strict ]
                 go a n s = do
                   (a', s') <- f s
                   go (a + a') (n - 1) s'
-
-            {-# NOINLINE levReader #-}
-            levReader = runIO $ L.runReaderWithByteString L.read4Strings
 
             {-# NOINLINE binary #-}
             binary = run $ B.runBinaryGetStrict B.read4Strings

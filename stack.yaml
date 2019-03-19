@@ -1,7 +1,7 @@
-resolver: lts-13.4
+resolver: lts-13.12
 
 packages:
   - .
 
 ghc-options:
-  $everything: -j -fprint-explicit-kinds
+  $everything: -j -fprint-explicit-kinds -ddump-splices

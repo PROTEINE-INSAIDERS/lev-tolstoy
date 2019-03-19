@@ -19,6 +19,7 @@ dependencies:
 - ghc-prim
 - primitive
 - singletons
+- unliftio
 
 library:
   source-dirs: src
@@ -31,12 +32,12 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wall
     dependencies:
     - base
     - lev-tolstoy
     - bytestring
     - ghc-prim
-    - lev-tolstoy
     - primitive
 
 tests:
@@ -64,9 +65,8 @@ benchmarks:
     ghc-options:
     - -main-is Bench.main
     - -O2
-    - -funbox-strict-fields
-    - -fmax-simplifier-iterations=6
     - -Wall
+    - -funbox-strict-fields 
     dependencies:
     - base
     - binary >= 0.8.4.0
