@@ -28,6 +28,7 @@ read12Int64PlusInt32 = do
             + a9 + a10 + a11 + a12
             + fromIntegral a13)
 
+{-# INLINE getWord64N16Host #-}
 getWord64N16Host :: Reader 0 128 IO Word64
 getWord64N16Host = do
     s0 <- readWord64
@@ -46,5 +47,5 @@ getWord64N16Host = do
     s13 <- readWord64
     s14 <- readWord64
     s15 <- readWord64
-    return (s0+s1+s2+s3+s4+s5+s6+s7+s9+s10+s11+s12+s13+s14+s15)
+    return (s0+s1+s2+s3+s4+s5+s6+s7+s8+s9+s10+s11+s12+s13+s14+s15)
     

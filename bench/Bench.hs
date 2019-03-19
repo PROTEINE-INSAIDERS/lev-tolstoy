@@ -5,6 +5,7 @@ import qualified Bench.Cereal      as C
 import qualified Bench.Handwritten as H
 import           Criterion.Main
 import           Data.ByteString   as BS
+import qualified Data.ByteString.Lazy as BSL
 import           Data.Int
 import           Data.Word
 import qualified Lev.Reader.Static as LS
@@ -25,15 +26,15 @@ readerBench = bgroup "reader" [ strict ]
       where
         readWord64N16Host =  env setupWord64N16Host $ \ ~buffer ->
           bgroup "readWord64N16Host"
-          [
-
+          [ bench "binary"  $ nf (B.runGet $ B.getWord64N16Host iterations) (BSL.fromStrict buffer) 
+          , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host iterations) buffer
           ]
-        where 
-          setupWord64N16Host :: IO ByteString
-          setupWord64N16Host = return $ BS.replicate buffer1G (1073741824)
+          where 
+            size = 1073741824
+            iterations = size `div` 128
 
-          iterations = 1073741824 `div` 
-
+            setupWord64N16Host :: IO ByteString
+            setupWord64N16Host = return $ BS.replicate size 0
 
         read1Ginto12Int64plusInt32 = env setup1G $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
@@ -46,7 +47,7 @@ readerBench = bgroup "reader" [ strict ]
           ]
           where
             buffer1G :: Int
-            buffer1G = 100000000 -- 1000000000
+            buffer1G = 100000000 
 
             {-# INLINE iterations #-}
             iterations :: Int

@@ -31,12 +31,14 @@ instance Cursor ByteStringCursor where
 
 instance ConsumeBytestring ByteStringCursor where
     -- consumeBytestring :: (PrimMonad m) => ByteStringCursor -> Int -> (ByteStringCursor -> ByteString -> m (Result a)) -> m (Result a)
+    {-# INLINE consumeBytestring #-}
     consumeBytestring cursor size k = 
         consume cursor size $ \c@(ByteStringCursor bPtr _ _) addr -> do
             let (Ptr bAddr) = unsafeForeignPtrToPtr bPtr -- эта функция всегда вызывается из withForeignPtr
                 off = addr `minusAddr` Addr bAddr
             k c $ fromForeignPtr bPtr off size
 
+{-# INLINABLE runByteString #-}
 runByteString :: Reader ByteStringCursor IO a -> ByteString -> IO (a, ByteString)
 runByteString (Reader f) bs = do 
     let (bPtr, bOff, bSize) = toForeignPtr bs
