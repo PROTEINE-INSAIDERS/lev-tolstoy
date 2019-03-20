@@ -38,7 +38,7 @@ instance ConsumeBytestring ByteStringCursor where
                 off = addr `minusAddr` Addr bAddr
             k c $ fromForeignPtr bPtr off size
 
-{-# INLINABLE runByteString #-}
+{-# INLINE runByteString #-}
 runByteString :: Reader ByteStringCursor IO a -> ByteString -> IO (a, ByteString)
 runByteString (Reader f) bs = do 
     let (bPtr, bOff, bSize) = toForeignPtr bs

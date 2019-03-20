@@ -12,33 +12,33 @@ import           Lev.Reader.Cursor as X
 
 newtype Reader c m a = Reader { runReader :: forall r . c -> (c -> a -> m (Result r)) -> m (Result r) }
 
-{-# INLINABLE pureReader #-}
+{-# INLINE pureReader #-}
 pureReader :: a -> Reader c m a
 pureReader a = Reader $ \c k -> k c a 
 
-{-# INLINABLE bindReader #-}
+{-# INLINE bindReader #-}
 bindReader :: (a -> Reader c m b) -> Reader c m a -> Reader c m b
 bindReader g (Reader f) = Reader $ \c0 k -> f c0 $ \c1 a -> runReader (g a) c1 k  
 
 instance Functor (Reader c m) where
-    {-# INLINABLE fmap #-}
+    {-# INLINE fmap #-}
     fmap f = bindReader (pureReader . f)
 
 instance Applicative (Reader c m) where
-    {-# INLINABLE pure #-}
+    {-# INLINE pure #-}
     pure = pureReader
-    {-# INLINABLE (<*>) #-}
+    {-# INLINE (<*>) #-}
     rf <*> ra = bindReader (flip fmap ra) rf
 
 instance Monad (Reader c m) where
-    {-# INLINABLE (>>=) #-}
+    {-# INLINE (>>=) #-}
     (>>=) = flip bindReader
 
-{-# INLINABLE readByteString #-}
+{-# INLINE readByteString #-}
 readByteString :: ( ConsumeBytestring c, PrimMonad m ) => Int -> Reader c m ByteString
 readByteString size = Reader $ \c k -> consumeBytestring c size k
 
-{-# INLINABLE readStatic #-}
+{-# INLINE readStatic #-}
 readStatic :: forall s c m a . ( KnownNat s, Cursor c, PrimMonad m ) => Static.Reader 0 s m a -> Reader c m a
 readStatic (Static.Reader f) = Reader $ \c0 k -> do 
     let size = fromIntegral (natVal $ sing @s)

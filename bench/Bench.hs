@@ -7,12 +7,13 @@ import           Criterion.Main
 import           Data.ByteString   as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Int
+import qualified Data.Store as ST
 import           Data.Word
 import qualified Lev.Reader.Static as LS
-import qualified Lev.Reader.Dynamic as LD
 import qualified Bench.Lev.Reader.Dynamic as LD
 import qualified Bench.Lev.Reader.Static as LS
 import qualified Lev.Reader.ByteString as LD
+import qualified Bench.Store as ST
 
 readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
@@ -20,18 +21,19 @@ readerBench = bgroup "reader" [ strict ]
     strict = bgroup "strict"
       [ read1Ginto12Int64plusInt32
       , readWord64N16Host
-    --  , bigVsLittleEndian
+      , bigVsLittleEndian
     --  , byteStrings
       ]
       where
         readWord64N16Host =  env setupWord64N16Host $ \ ~buffer ->
           bgroup "readWord64N16Host"
-          [ bench "binary"  $ nf (B.runGet $ B.getWord64N16Host iterations) (BSL.fromStrict buffer) 
+          [ bench "binary"  $ nf (B.runGet $ B.getWord64N16Host iterations) (BSL.fromStrict buffer)
+          , bench "store" $ nfIO $ (ST.decodeIOWith $ ST.getWord64N16Host iterations) buffer 
           , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host iterations) buffer
           ]
           where 
-            size = 1073741824
-            iterations = size `div` 128
+            size = 104857600 
+            iterations = size `div` 8
 
             setupWord64N16Host :: IO ByteString
             setupWord64N16Host = return $ BS.replicate size 0
@@ -39,11 +41,11 @@ readerBench = bgroup "reader" [ strict ]
         read1Ginto12Int64plusInt32 = env setup1G $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
           [
-            bench "Handwritten" $ nf handwritten buffer
-          , bench "Binary" $ nf binary buffer
+            bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer
+          , bench "Binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
        -- , bench "Cereal" $ nf cereal buffer
-          , bench "Lev static" $ nfIO $ ls buffer
-          , bench "Lev dynamic" $ nfIO $ ld buffer
+          , bench "Lev static" $ nfIO $ (runIO $ LS.readByteString LS.read12Int64PlusInt32) buffer
+          , bench "Lev dynamic" $ nfIO $ (runIO $ LD.runByteString LD.read12Int64PlusInt32) buffer
           ]
           where
             buffer1G :: Int
@@ -72,20 +74,8 @@ readerBench = bgroup "reader" [ strict ]
                   (a', s') <- f s
                   go (a + a') (n - 1) s'
 
-            {-# NOINLINE handwritten #-}
-            handwritten = run H.read12Int64PlusInt32
-
-            {-# NOINLINE binary #-}
-            binary = run $ B.runBinaryGetStrict B.read12Int64PlusInt32
-
-            {-# NOINLINE cereal #-}
-            cereal = run $ C.runCerealGetStrict C.read12Int64PlusInt32
-
-            {-# NOINLINE ls #-}
-            ls = runIO $ LS.readByteString LS.read12Int64PlusInt32
-
-            {-# NOINLINE ld #-}
-            ld = runIO $ LD.runByteString LD.read12Int64PlusInt32
+            -- {-# NOINLINE cereal #-}
+            -- cereal = run $ C.runCerealGetStrict C.read12Int64PlusInt32
 
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"

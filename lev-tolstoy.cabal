@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 95ebb4c593cb2f90b81add8a004448ab9e1b3dbf2a689a054907fe037c2f01c4
+-- hash: 0ec417962e75fa12ca427d858c9fbc9217438cbe4315b8900e5a06f8d23517d4
 
 name:           lev-tolstoy
 version:        0.0.0.0
@@ -54,7 +54,7 @@ executable fastgraph
       Paths_lev_tolstoy
   hs-source-dirs:
       examples/fastgraph
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
   build-depends:
       base
     , bytestring
@@ -75,7 +75,7 @@ test-suite lev-tolstoy-test
       Paths_lev_tolstoy
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -main-is Spec.main -Wall
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -main-is Spec.main -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
   build-depends:
       HUnit
     , QuickCheck
@@ -101,10 +101,11 @@ benchmark lev-tolstoy-bench
       Bench.Handwritten
       Bench.Lev.Reader.Dynamic
       Bench.Lev.Reader.Static
+      Bench.Store
       Paths_lev_tolstoy
   hs-source-dirs:
       bench
-  ghc-options: -main-is Bench.main -O2 -Wall -funbox-strict-fields
+  ghc-options: -main-is Bench.main -O2 -funbox-strict-fields -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
   build-depends:
       base
     , binary >=0.8.4.0
@@ -116,5 +117,6 @@ benchmark lev-tolstoy-bench
     , lev-tolstoy
     , primitive
     , singletons
+    , store
     , unliftio
   default-language: Haskell2010
