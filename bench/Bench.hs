@@ -19,17 +19,19 @@ readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
   where
     strict = bgroup "strict"
-      [ read1Ginto12Int64plusInt32
-      , readWord64N16Host
-      , bigVsLittleEndian
+      [ --read1Ginto12Int64plusInt32
+      --, 
+      readWord64N16Host
+     -- , bigVsLittleEndian
     --  , byteStrings
       ]
       where
         readWord64N16Host =  env setupWord64N16Host $ \ ~buffer ->
           bgroup "readWord64N16Host"
-          [ bench "binary"  $ nf (B.runGet $ B.getWord64N16Host iterations) (BSL.fromStrict buffer)
-          , bench "store" $ nfIO $ (ST.decodeIOWith $ ST.getWord64N16Host iterations) buffer 
-          , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host iterations) buffer
+          [ -- bench "binary"  $ nf (B.runGet $ B.getWord64N16Host iterations) (BSL.fromStrict buffer)
+          -- , 
+            bench "store" $ nfIO $ (ST.decodeIOWith $ ST.getWord64N16Host iterations) buffer 
+          , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host (iterations)) buffer
           ]
           where 
             size = 104857600 
