@@ -4,5 +4,5 @@ packages:
   - .
 
 ghc-options:
-  $everything: -j -fprint-explicit-kinds -fllvm -ddump-llvm
-#  $everything: -j -fprint-explicit-kinds -ddump-asm
+# $everything: -j -fprint-explicit-kinds -fllvm -ddump-llvm
+  $everything: -j -fprint-explicit-kinds -ddump-asm

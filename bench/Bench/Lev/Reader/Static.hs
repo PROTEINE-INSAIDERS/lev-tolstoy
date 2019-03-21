@@ -49,3 +49,24 @@ getWord64N16Host = do
     s15 <- readWord64
     return (s0+s1+s2+s3+s4+s5+s6+s7+s8+s9+s10+s11+s12+s13+s14+s15)
     
+{-# INLINE getWord8N16 #-}
+getWord8N16 :: Reader 0 16 IO Word8
+getWord8N16 = do
+    s0 <- readWord8
+    s1 <- readWord8
+    s2 <- readWord8
+    s3 <- readWord8
+    s4 <- readWord8
+    s5 <- readWord8
+    s6 <- readWord8
+    s7 <- readWord8
+    s8 <- readWord8
+    s9 <- readWord8
+    s10 <- readWord8
+    s11 <- readWord8
+    s12 <- readWord8
+    s13 <- readWord8
+    s14 <- readWord8
+    s15 <- readWord8
+    return (s0+s1+s2+s3+s4+s5+s6+s7+s8+s9+s10+s11+s12+s13+s14+s15)
+    

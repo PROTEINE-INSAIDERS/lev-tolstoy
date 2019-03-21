@@ -14,6 +14,15 @@ getWord64N16Host :: (Cursor c) => Int -> Reader c IO Word64
 getWord64N16Host = loop 0
   where loop s n | s `seq` n `seq` False = undefined
         loop s 0 = return s
-        loop _ n = do 
+        loop s n = do 
             r <- readStatic Static.getWord64N16Host
-            loop r (n-16)
+            loop (r - s) (n-16)
+
+{-# INLINE getWord8N16 #-}
+getWord8N16 :: (Cursor c) => Int -> Reader c IO Word8
+getWord8N16 = loop 0
+  where loop s n | s `seq` n `seq` False = undefined
+        loop s 0 = return s
+        loop s n = do 
+            r <- readStatic Static.getWord8N16
+            loop (r - s) (n-16)

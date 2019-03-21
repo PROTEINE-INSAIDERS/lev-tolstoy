@@ -32,15 +32,15 @@ import           UnliftIO.Exception
 newtype Reader (o :: Nat) (s :: Nat) m a = Reader 
     { runReader :: forall r . Addr -> (a -> m (Result r)) -> m (Result r) }
 
-{-# INLINABLE pureReader #-}
+{-# INLINE pureReader #-}
 pureReader :: a -> Reader o 0 m a
 pureReader a = Reader $ \_ k -> k a
 
-{-# INLINABLE bindReader #-}
+{-# INLINE bindReader #-}
 bindReader :: ((oa + sa) ~ ob) => (a -> Reader ob sb m b) -> Reader oa sa m a -> Reader oa (sa + sb) m b
 bindReader g (Reader f) = Reader $ \addr k -> f addr $ \a -> runReader (g a) addr k  
 
-{-# INLINABLE (>>>=) #-}
+{-# INLINE (>>>=) #-}
 (>>>=) :: ((oa + sa) ~ ob) => Reader oa sa m a -> (a -> Reader ob sb m b) -> Reader oa (sa + sb) m b
 (>>>=) = flip bindReader
 

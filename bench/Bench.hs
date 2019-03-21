@@ -27,11 +27,13 @@ readerBench = bgroup "reader" [ strict ]
       ]
       where
         readWord64N16Host =  env setupWord64N16Host $ \ ~buffer ->
-          bgroup "readWord64N16Host"
+          bgroup "Word64N16Host"
           [ -- bench "binary"  $ nf (B.runGet $ B.getWord64N16Host iterations) (BSL.fromStrict buffer)
           -- , 
             bench "store" $ nfIO $ (ST.decodeIOWith $ ST.getWord64N16Host iterations) buffer 
-          , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host (iterations)) buffer
+          , bench "store8" $ nfIO $ (ST.decodeIOWith $ ST.getWord8N16 size) buffer 
+          , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host iterations) buffer
+          , bench "lev8" $ nfIO $ (LD.runByteString $ LD.getWord8N16 size) buffer
           ]
           where 
             size = 104857600 
