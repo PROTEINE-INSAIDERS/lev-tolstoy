@@ -4,7 +4,7 @@ module Bench.Lev.Reader.Static where
 
 import Data.Int
 import Data.Word
-import Lev.Reader.Static.Syntax
+import Lev.Reader.FixedLength.Syntax
 import           Prelude            hiding (Monad (..))
 
 {-# INLINE read12Int64PlusInt32 #-}

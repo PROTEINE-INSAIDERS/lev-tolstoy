@@ -1,7 +1,6 @@
 module Bench where
 
 import qualified Bench.Binary      as B
-import qualified Bench.Cereal      as C
 import qualified Bench.Handwritten as H
 import           Criterion.Main
 import           Data.ByteString   as BS
@@ -9,7 +8,7 @@ import qualified Data.ByteString.Lazy as BSL
 import           Data.Int
 import qualified Data.Store as ST
 import           Data.Word
-import qualified Lev.Reader.Static as LS
+import qualified Lev.Reader.FixedLength as LS
 import qualified Bench.Lev.Reader.Dynamic as LD
 import qualified Bench.Lev.Reader.Static as LS
 import qualified Lev.Reader.ByteString as LD
@@ -33,6 +32,7 @@ readerBench = bgroup "reader" [ strict ]
             bench "store" $ nfIO $ (ST.decodeIOWith $ ST.getWord64N16Host iterations) buffer 
           , bench "store8" $ nfIO $ (ST.decodeIOWith $ ST.getWord8N16 size) buffer 
           , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host iterations) buffer
+          , bench "levD" $ nfIO $ (LD.runByteString $ LD.getWord64N16HostD iterations) buffer
           , bench "lev8" $ nfIO $ (LD.runByteString $ LD.getWord8N16 size) buffer
           ]
           where 

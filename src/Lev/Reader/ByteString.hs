@@ -1,3 +1,6 @@
+{-# LANGUAGE TypeFamilies #-}
+
+-- TODO: реэкспортировать Reader. Подразумевается, что пользователь импортирует Lev.Reader.ByteString и читает байтстринги.  
 module Lev.Reader.ByteString where
 
 import           Data.ByteString
@@ -9,7 +12,8 @@ import           Data.Word
 import           Foreign.ForeignPtr
 import           Foreign.ForeignPtr.Unsafe
 import           Lev.Reader.Cursor
-import           Lev.Reader.Dynamic
+import           Lev.Reader
+import           Lev.Readable
 import           UnliftIO.Exception
 
 data ByteStringCursor = ByteStringCursor !(ForeignPtr Word8) !Addr !Addr
@@ -38,6 +42,7 @@ instance ConsumeBytestring ByteStringCursor where
                 off = addr `minusAddr` Addr bAddr
             k c $ fromForeignPtr bPtr off size
 
+-- todo: remove!
 {-# INLINE runByteString #-}
 runByteString :: Reader ByteStringCursor IO a -> ByteString -> IO (a, ByteString)
 runByteString (Reader f) bs = do 
@@ -53,3 +58,9 @@ runByteString (Reader f) bs = do
                 return (a, fromForeignPtr bPtr newOff newSize) 
             Fail e -> throwIO e
                         
+
+instance Readable ByteString where 
+    type ReaderCursor ByteString = ByteStringCursor
+    type ReaderMonad ByteString = IO
+    {-# INLINE readWith #-}
+    readWith byteString reader =  fst <$> runByteString reader byteString

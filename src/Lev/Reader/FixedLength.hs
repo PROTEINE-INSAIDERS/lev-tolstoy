@@ -8,8 +8,8 @@
            , FlexibleContexts
   #-}
 
-module Lev.Reader.Static ( X.Result(..)
-                         , module Lev.Reader.Static
+module Lev.Reader.FixedLength ( X.Result(..)
+                         , module Lev.Reader.FixedLength
                          ) where
 
 import           Control.Monad

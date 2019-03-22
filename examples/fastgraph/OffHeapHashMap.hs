@@ -9,8 +9,6 @@ import Data.Bits
 import Data.ByteString.UTF8
 import Data.ByteString as BS
 import Data.Hash.Murmur
-import Lev.Reader.Static as LS
-import Lev.Reader.Dynamic as LD
 import Lev.Reader.ByteString
 
 newtype NodeId = NodeId ByteString deriving ( Show )
@@ -23,7 +21,7 @@ nodeIdFromString a = NodeId $ pack $ (fromIntegral $ shift len (-8)) : (fromInte
 nodeIdToString :: NodeId -> String 
 nodeIdToString (NodeId nodeId) = toString $ BS.drop 2 nodeId
 
-
+-- TODO: как просто определить тайпкласс, означающий, что NodeId может быть прочитана с произвольного байтсринга?
 
 
 -- testKey = unpack $ nodeIdFromString "testё" -- todo: add length
