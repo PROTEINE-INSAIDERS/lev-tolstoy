@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, DataKinds #-}
+{-# LANGUAGE ScopedTypeVariables, DataKinds, TypeApplications #-}
 
 module OffHeapHashMap where
 
@@ -28,7 +28,7 @@ nodeIdToString (NodeId nodeId) = toString $ BS.drop 2 nodeId
 {-# INLINE readNodeId #-}
 readNodeId :: ( ConsumeBytestring c ) => Reader c IO NodeId
 readNodeId = do
-  size <- fixedLength $ FX.skip (Proxy :: Proxy 1) FX.>>>= \_ -> -- тут лежит кол-во значений.
+  size <- fixedLength $ FX.skip @1 FX.>>>= \_ -> -- тут лежит кол-во значений.
                         FX.readWord16be 
   liftIO $ Prelude.putStrLn (show size)
   NodeId <$> readByteString (fromIntegral size) 
