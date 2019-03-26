@@ -29,6 +29,8 @@ import           Lev.Reader.Result as X
 import           System.Endian
 import           UnliftIO.Exception
 
+-- TODO: возможно имеет смысл изменить порядок пораметров. 
+-- это позволит указывать s с помощью TypeApplications
 newtype Reader (o :: Nat) (s :: Nat) m a = Reader 
     { runReader :: forall r . Addr -> (a -> m (Result r)) -> m (Result r) }
 
@@ -62,6 +64,10 @@ readByteString (Reader f) bs = do
     case res  of 
         Done a -> return (a, fromForeignPtr bPtr (bOff + rReq) (bSize - rReq))
         Fail e -> throwIO e
+
+{-# INLINE skip #-}
+skip :: forall o s m p . (KnownNat o, PrimMonad m) => p s -> Reader o s m ()
+skip = const $ Reader $ \_ k -> k () 
 
 -- TODO: DO NOT EXPOSE!! (otherwise introduce sizeof which is not safe though)
 {-# INLINE prim #-}

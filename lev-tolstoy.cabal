@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0d6f046a5c529ded2676e074f4532bdcc8f31bc866ea58247341cef8ce2a44be
+-- hash: cd2d1749e7b8cb683ea647f9cef9addae913ecce68007b5bfe62eff6460f4c01
 
 name:           lev-tolstoy
 version:        0.0.0.0
@@ -45,6 +45,7 @@ library
     , ghc-prim
     , primitive
     , singletons
+    , transformers
     , unliftio
   default-language: Haskell2010
 
@@ -65,6 +66,7 @@ executable fastgraph
     , murmur3
     , primitive
     , singletons
+    , transformers
     , unliftio
     , utf8-string
   default-language: Haskell2010
@@ -90,6 +92,7 @@ test-suite lev-tolstoy-test
     , test-framework
     , test-framework-hunit
     , test-framework-quickcheck2
+    , transformers
     , unliftio
   default-language: Haskell2010
 
@@ -118,5 +121,6 @@ benchmark lev-tolstoy-bench
     , primitive
     , singletons
     , store
+    , transformers
     , unliftio
   default-language: Haskell2010

@@ -7,8 +7,11 @@ import           Control.Monad.Primitive
 import           Data.ByteString
 import           Data.Singletons
 import           Data.Singletons.TypeLits
+import           Control.Monad.IO.Class
 import qualified Lev.Reader.FixedLength as Static 
 import           Lev.Reader.Cursor as X
+
+-- TODO: придумать названия для комбинаторов FixedReader-а и реэкспортировать его функции. 
 
 newtype Reader c m a = Reader { runReader :: forall r . c -> (c -> a -> m (Result r)) -> m (Result r) }
 
@@ -33,6 +36,12 @@ instance Applicative (Reader c m) where
 instance Monad (Reader c m) where
     {-# INLINE (>>=) #-}
     (>>=) = flip bindReader
+
+instance ( MonadIO m ) => MonadIO (Reader c m) where
+    {-# INLINE liftIO #-}
+    liftIO f = Reader $ \c k -> do
+        a <- liftIO f
+        k c a
 
 {-# INLINE readByteString #-}
 readByteString :: ( ConsumeBytestring c, PrimMonad m ) => Int -> Reader c m ByteString

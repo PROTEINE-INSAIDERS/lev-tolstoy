@@ -1,7 +1,9 @@
 {-# LANGUAGE TypeFamilies #-}
 
 -- TODO: реэкспортировать Reader. Подразумевается, что пользователь импортирует Lev.Reader.ByteString и читает байтстринги.  
-module Lev.Reader.ByteString where
+module Lev.Reader.ByteString ( module Lev.Reader.ByteString
+                             , module X
+                             ) where
 
 import           Data.ByteString
 import           Data.ByteString.Internal
@@ -11,9 +13,9 @@ import           Data.Typeable
 import           Data.Word
 import           Foreign.ForeignPtr
 import           Foreign.ForeignPtr.Unsafe
-import           Lev.Reader.Cursor
-import           Lev.Reader
-import           Lev.Readable
+import           Lev.Reader.Cursor as X
+import           Lev.Reader as X
+import           Lev.Readable as X
 import           UnliftIO.Exception
 
 data ByteStringCursor = ByteStringCursor !(ForeignPtr Word8) !Addr !Addr
@@ -35,6 +37,8 @@ instance Cursor ByteStringCursor where
 
 instance ConsumeBytestring ByteStringCursor where
     -- consumeBytestring :: (PrimMonad m) => ByteStringCursor -> Int -> (ByteStringCursor -> ByteString -> m (Result a)) -> m (Result a)
+    -- TODO: Переименовать в slice. Из названия должно быть понятно, что функция не копирует 
+    -- ByteString, а создаёт срез на основе существующего. 
     {-# INLINE consumeBytestring #-}
     consumeBytestring cursor size k = 
         consume cursor size $ \c@(ByteStringCursor bPtr _ _) addr -> do
@@ -63,4 +67,4 @@ instance Readable ByteString where
     type ReaderCursor ByteString = ByteStringCursor
     type ReaderMonad ByteString = IO
     {-# INLINE readWith #-}
-    readWith byteString reader =  fst <$> runByteString reader byteString
+    readWith reader byteString =  fst <$> runByteString reader byteString

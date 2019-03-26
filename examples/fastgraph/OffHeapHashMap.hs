@@ -1,25 +1,43 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, DataKinds #-}
 
 module OffHeapHashMap where
 
 import Codec.Binary.UTF8.String
-import Data.Int
-import Data.Word
+import           Control.Monad.IO.Class
 import Data.Bits
 import Data.ByteString.UTF8
 import Data.ByteString as BS
 import Data.Hash.Murmur
+import Data.Int
+import Data.Proxy
+import Data.Word
 import Lev.Reader.ByteString
+import qualified Lev.Reader.FixedLength as FX
 
 newtype NodeId = NodeId ByteString deriving ( Show )
 
+{-
 nodeIdFromString :: String -> NodeId
 nodeIdFromString a = NodeId $ pack $ (fromIntegral $ shift len (-8)) : (fromIntegral len) : encoded
     where encoded = encode a 
           len :: Word16 = fromIntegral $ Prelude.length encoded 
-
+-}
 nodeIdToString :: NodeId -> String 
 nodeIdToString (NodeId nodeId) = toString $ BS.drop 2 nodeId
+
+{-# INLINE readNodeId #-}
+readNodeId :: ( ConsumeBytestring c ) => Reader c IO NodeId
+readNodeId = do
+  size <- fixedLength $ FX.skip (Proxy :: Proxy 1) FX.>>>= \_ -> -- тут лежит кол-во значений.
+                        FX.readWord16be 
+  liftIO $ Prelude.putStrLn (show size)
+  NodeId <$> readByteString (fromIntegral size) 
+
+testKey = do 
+  keys <- BS.readFile "/home/schernichkin/Data/FastGraph/R100k/0/values-0000000-0000"
+  res <- readWith readNodeId keys 
+  return res
+
 
 -- TODO: как просто определить тайпкласс, означающий, что NodeId может быть прочитана с произвольного байтсринга?
 
