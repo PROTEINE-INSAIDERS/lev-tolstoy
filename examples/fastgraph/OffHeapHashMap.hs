@@ -11,10 +11,39 @@ import Data.Hash.Murmur
 import Data.Int
 import Data.Proxy
 import Data.Word
-import Lev.Reader.ByteString
-import qualified Lev.Reader.FixedLength as FX
+import Lev.Reader.ByteString as Reader
 
-newtype NodeId = NodeId ByteString deriving ( Show )
+--TODO: ByteString уже содержит информацию об длине, но в murmur3 оригинального алгоритма она 
+-- передаётся в составе BS. Стоит ли нам тут её добавлять?
+newtype NodeId = NodeId ByteString deriving (Show, Eq)
+
+nodeIdToString :: NodeId -> String 
+nodeIdToString (NodeId nodeId) = toString nodeId
+
+{-# INLINE readNodeId #-}
+readNodeId :: (Slicer c) => Reader c IO NodeId
+readNodeId = do
+  size <- fixed readWord16be
+  NodeId <$> slice (fromIntegral size)
+
+newtype NodeOffset = NodeOffset Word64 deriving (Show)
+
+{-# INLINE readNodeOffsetFromBucket #-}
+readNodeOffsetFromBucket :: (Slicer c) => NodeId -> Reader c IO (Maybe NodeOffset)
+readNodeOffsetFromBucket (NodeId nodeId) = fixed readWord8 >>= go
+  where 
+    go 0 = return Nothing 
+    go n = do
+      (NodeId key) <- readNodeId
+      if (key == nodeId)
+        then Just . NodeOffset <$> fixed readWord64be
+        else go $ n - 1
+
+data OffHeapHashMap = OffHeapHashMap { offsets :: ByteString, buckets :: ByteString }
+
+readNodeOffset :: (Slicer c) => OffHeapHashMap -> NodeId -> Reader c IO (Maybe NodeOffset)
+readNodeOffset = do
+  undefined
 
 {-
 nodeIdFromString :: String -> NodeId
@@ -22,29 +51,11 @@ nodeIdFromString a = NodeId $ pack $ (fromIntegral $ shift len (-8)) : (fromInte
     where encoded = encode a 
           len :: Word16 = fromIntegral $ Prelude.length encoded 
 -}
-nodeIdToString :: NodeId -> String 
-nodeIdToString (NodeId nodeId) = toString $ BS.drop 2 nodeId
-
-{-# INLINE readNodeId #-}
-readNodeId :: ( ConsumeBytestring c ) => Reader c IO NodeId
-readNodeId = do
-  size <- fixedLength $ FX.skip @1 FX.>>>= \_ -> -- тут лежит кол-во значений.
-                        FX.readWord16be 
-  liftIO $ Prelude.putStrLn (show size)
-  NodeId <$> readByteString (fromIntegral size) 
 
 testKey = do 
   keys <- BS.readFile "/home/schernichkin/Data/FastGraph/R100k/0/values-0000000-0000"
   res <- readWith readNodeId keys 
   return res
-
-
--- TODO: как просто определить тайпкласс, означающий, что NodeId может быть прочитана с произвольного байтсринга?
-
-
--- testKey = unpack $ nodeIdFromString "testё" -- todo: add length
-
-data OffHeapHashMap = OffHeapHashMap { keys :: ByteString, values :: ByteString }
 
 loadOffHeapHashMap :: String -> String -> IO OffHeapHashMap
 loadOffHeapHashMap keys values = OffHeapHashMap <$> (BS.readFile keys) <*> (BS.readFile  values)
@@ -66,64 +77,3 @@ getValue (OffHeapHashMap keys values) key = do
 test = testMap >>= \m -> getValue m "0"
 -}
 -- val bucketId = HashMapUtil.computeHash(keySerializer.serialize(key)) % numberOfBuckets
-
-{-- 
-class OffHeapHashMap[TKey, TValue](keys: GraphBuffer,
-                                   values: GraphBuffer,
-                                   hashFunction: Option[HashFunction[TKey]] = None)
-                                  (implicit keyDeserializer: Deserializer[TKey],
-                                   keySerializer: Serializer[TKey],
-                                   valueDeserializer: Deserializer[TValue]) {
-
-  private val numberOfBuckets = keys.size / HashMapUtil.BucketSize
-
-  def size = numberOfBuckets
-
-  def close: Unit = {
-    keys.close
-    values.close
-  }
-
-  def getValue(key: TKey): Option[TValue] = {
-    val bucketId = HashMapUtil.computeHash(keySerializer.serialize(key)) % numberOfBuckets
-    val keysOffset = bucketId * HashMapUtil.BucketSize
-
-    val keysReader = new BufferReader(keys, keysOffset)
-    val valuesOffset = keysReader.readLong()
-    val valuesReader = new BufferReader(values, valuesOffset)
-    val valuesCount = valuesReader.readByte()
-
-    for (_ <- 0 until valuesCount) {
-      val collisionKey = keyDeserializer.deserialize(valuesReader)
-      val value = valueDeserializer.deserialize(valuesReader)
-
-      if (collisionKey == key) {
-        return Some(value)
-      }
-    }
-
-    None
-  }
-}
-
-
-object Deserializers {
-
-  val IdDeserializer = new Deserializer[String] {
-    override def deserialize(reader: BufferReader): String = {
-      val size = reader.readShort()
-      val bytes = reader.readBytes(size)
-      new String(bytes, Serializers.UTF8)
-    }
-  }
-
-  implicit val LongDeserializer = createDeserializer[Long](_.readLong())
-
-  def createDeserializer[T](read: BufferReader => T) = {
-    new Deserializer[T] {
-      override def deserialize(reader: BufferReader): T = read(reader)
-    }
-  }
-}
-
---}

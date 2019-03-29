@@ -47,8 +47,7 @@ readerBench = bgroup "reader" [ strict ]
           [
             bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer
           , bench "Binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
-       -- , bench "Cereal" $ nf cereal buffer
-          , bench "Lev static" $ nfIO $ (runIO $ LS.readByteString LS.read12Int64PlusInt32) buffer
+          , bench "Lev static" $ nfIO $ (runIO $ LS.readByteStringWith LS.read12Int64PlusInt32) buffer
           , bench "Lev dynamic" $ nfIO $ (runIO $ LD.runByteString LD.read12Int64PlusInt32) buffer
           ]
           where
@@ -77,9 +76,6 @@ readerBench = bgroup "reader" [ strict ]
                 go a n s = do
                   (a', s') <- f s
                   go (a + a') (n - 1) s'
-
-            -- {-# NOINLINE cereal #-}
-            -- cereal = run $ C.runCerealGetStrict C.read12Int64PlusInt32
 
         bigVsLittleEndian = env setupEnv $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"

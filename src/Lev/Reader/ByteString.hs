@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE BangPatterns, TypeFamilies #-}
 
 -- TODO: реэкспортировать Reader. Подразумевается, что пользователь импортирует Lev.Reader.ByteString и читает байтстринги.  
 module Lev.Reader.ByteString ( module Lev.Reader.ByteString
@@ -18,9 +18,9 @@ import           Lev.Reader as X
 import           Lev.Readable as X
 import           UnliftIO.Exception
 
-data ByteStringCursor = ByteStringCursor !(ForeignPtr Word8) !Addr !Addr
+data ByteStringCursor = ByteStringCursor !(ForeignPtr Word8) !Addr !Addr deriving (Show, Typeable)
 
-data ByteStringError = ByteStringOverflow !Addr !Addr deriving ( Show, Typeable )
+data ByteStringError = ByteStringOverflow !Addr !Addr deriving (Show, Typeable)
 
 instance Exception ByteStringError
 
@@ -35,14 +35,14 @@ instance Cursor ByteStringCursor where
                     return $ Fail
                         (toException $ ByteStringOverflow nextAddr maxAddr)
 
-instance ConsumeBytestring ByteStringCursor where
+instance Slicer ByteStringCursor where
     -- consumeBytestring :: (PrimMonad m) => ByteStringCursor -> Int -> (ByteStringCursor -> ByteString -> m (Result a)) -> m (Result a)
     -- TODO: Переименовать в slice. Из названия должно быть понятно, что функция не копирует 
     -- ByteString, а создаёт срез на основе существующего. 
-    {-# INLINE consumeBytestring #-}
-    consumeBytestring cursor size k = 
+    {-# INLINE consumeSlice #-}
+    consumeSlice cursor size k = 
         consume cursor size $ \c@(ByteStringCursor bPtr _ _) addr -> do
-            let (Ptr bAddr) = unsafeForeignPtrToPtr bPtr -- эта функция всегда вызывается из withForeignPtr
+            let (Ptr !bAddr) = unsafeForeignPtrToPtr bPtr -- эта функция всегда вызывается из withForeignPtr
                 off = addr `minusAddr` Addr bAddr
             k c $ fromForeignPtr bPtr off size
 

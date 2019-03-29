@@ -48,11 +48,11 @@ instance Functor (Reader (o :: Nat) (s :: Nat) m) where
     {-# INLINABLE fmap #-}
     fmap f = bindReader (pureReader . f)
 
-{-# INLINABLE readByteString #-}
+{-# INLINABLE readByteStringWith #-}
 -- TODO: Переименовать или вообще удалить. Для запуска статического ридера его надо сначала конвертировать в динамический, 
 -- потом использовать специализированную запускалку.
-readByteString :: forall o s a . ( KnownNat o, KnownNat (o + s) ) => Reader o s IO a -> ByteString -> IO (a, ByteString)
-readByteString (Reader f) bs = do
+readByteStringWith :: forall o s a . ( KnownNat o, KnownNat (o + s) ) => Reader o s IO a -> ByteString -> IO (a, ByteString)
+readByteStringWith (Reader f) bs = do
     let (bPtr, bOff, bSize) = toForeignPtr bs
         rOff = fromIntegral (natVal $ sing @o)
         rReq = fromIntegral (natVal $ sing @(o + s))
@@ -64,7 +64,7 @@ readByteString (Reader f) bs = do
         Fail e -> throwIO e
 
 {-# INLINE skip #-}
-skip :: forall s o m . (KnownNat o, PrimMonad m) => Reader o s m ()
+skip :: forall s o m . Reader o s m ()
 skip = Reader $ \_ k -> k ()
 
 -- TODO: DO NOT EXPOSE!! (otherwise introduce sizeof which is not safe though)
