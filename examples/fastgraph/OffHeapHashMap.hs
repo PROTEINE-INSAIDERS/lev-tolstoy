@@ -13,23 +13,21 @@ import Data.Proxy
 import Data.Word
 import Lev.Reader.ByteString as Reader
 
---TODO: ByteString уже содержит информацию об длине, но в murmur3 оригинального алгоритма она 
--- передаётся в составе BS. Стоит ли нам тут её добавлять?
 newtype NodeId = NodeId ByteString deriving (Show, Eq)
 
-nodeIdToString :: NodeId -> String 
-nodeIdToString (NodeId nodeId) = toString nodeId
-
 {-# INLINE readNodeId #-}
-readNodeId :: (Slicer c) => Reader c IO NodeId
+readNodeId :: (Consumable c, Sliceable c) => Reader c IO NodeId
 readNodeId = do
+   -- это не правильно, потому что в NodeId надо включить её размер. 
+   -- нужно добавить комбинатор lookAhead
   size <- fixed readWord16be
   NodeId <$> slice (fromIntegral size)
 
-newtype NodeOffset = NodeOffset Word64 deriving (Show)
+newtype NodeOffset = NodeOffset Word64 deriving (Show, Eq)
 
+-- сюда, наверное, стоит offset корзинки передать.
 {-# INLINE readNodeOffsetFromBucket #-}
-readNodeOffsetFromBucket :: (Slicer c) => NodeId -> Reader c IO (Maybe NodeOffset)
+readNodeOffsetFromBucket :: (Consumable c, Sliceable c) => NodeId -> Reader c IO (Maybe NodeOffset)
 readNodeOffsetFromBucket (NodeId nodeId) = fixed readWord8 >>= go
   where 
     go 0 = return Nothing 
@@ -39,10 +37,10 @@ readNodeOffsetFromBucket (NodeId nodeId) = fixed readWord8 >>= go
         then Just . NodeOffset <$> fixed readWord64be
         else go $ n - 1
 
-data OffHeapHashMap = OffHeapHashMap { offsets :: ByteString, buckets :: ByteString }
+data OffHeapHashMap = OffHeapHashMap !ByteString !ByteString
 
-readNodeOffset :: (Slicer c) => OffHeapHashMap -> NodeId -> Reader c IO (Maybe NodeOffset)
-readNodeOffset = do
+readNodeOffset :: (Sliceable c) => OffHeapHashMap -> NodeId -> Reader c IO (Maybe NodeOffset)
+readNodeOffset (OffHeapHashMap offsets buckets) (NodeId nodeId) = do  
   undefined
 
 {-

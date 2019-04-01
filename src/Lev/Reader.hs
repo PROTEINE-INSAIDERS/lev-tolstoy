@@ -53,12 +53,26 @@ instance (MonadIO m) => MonadIO (Reader c m) where
         k c a
 
 {-# INLINE fixed #-}
-fixed :: forall s c m a . ( KnownNat s, Cursor c, PrimMonad m ) => Fixed.Reader 0 s m a -> Reader c m a
+fixed :: forall s c m a . ( KnownNat s, Consumable c, PrimMonad m ) => Fixed.Reader 0 s m a -> Reader c m a
 fixed (Fixed.Reader f) = Reader $ \c0 k -> do
     let size = fromIntegral (natVal $ sing @s)
     consume c0 size $ \c1 addr -> f addr $ \a -> k c1 a
         
+-- TODO: 
+--  Запросить блок для ридера.
+--  Прочитать блок ридером. 
+--  Вернуть результат. Сбросить курсор, вызвать продолжение.
+--  Проблема реализации: 
+--    Драйвер может реаллоцировать буфер в процессе чтения,
+--    таким образом старый указатель может стать невалидным.    
+--    Нужно придумать, как ставить "закладку". При этом слишком "рано"
+--    установленная закладка может приводить к тому, что при реаллокации 
+--    буфера приходится копировать слишком много данных. Поэтому необходимо
+--    уметь убирать закладку, когда она уже не нужна. 
+lookAhead :: (Consumable c) => Reader c m a -> Reader c m a
+lookAhead = undefined
+
 --TODO: подумать, как можно этот метод специализировать по ByteStringCursor (и нужно ли).
 {-# INLINE slice #-}
-slice :: ( Slicer c, PrimMonad m ) => Int -> Reader c m ByteString
+slice :: ( Sliceable c, PrimMonad m ) => Int -> Reader c m ByteString
 slice size = Reader $ \c k -> consumeSlice c size k

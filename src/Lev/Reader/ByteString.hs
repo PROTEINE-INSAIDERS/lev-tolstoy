@@ -24,9 +24,8 @@ data ByteStringError = ByteStringOverflow !Addr !Addr deriving (Show, Typeable)
 
 instance Exception ByteStringError
 
-instance Cursor ByteStringCursor where
+instance Consumable ByteStringCursor where
     {-# INLINE consume #-}
-    -- consume :: (PrimMonad m) => ByteStringCursor -> Int -> (ByteStringCursor -> Addr -> m (Result a)) -> m (Result a)
     consume (ByteStringCursor bPtr currentAddr maxAddr) size k =
         let nextAddr = currentAddr `plusAddr` size
          in if nextAddr <= maxAddr
@@ -35,16 +34,17 @@ instance Cursor ByteStringCursor where
                     return $ Fail
                         (toException $ ByteStringOverflow nextAddr maxAddr)
 
-instance Slicer ByteStringCursor where
-    -- consumeBytestring :: (PrimMonad m) => ByteStringCursor -> Int -> (ByteStringCursor -> ByteString -> m (Result a)) -> m (Result a)
-    -- TODO: Переименовать в slice. Из названия должно быть понятно, что функция не копирует 
-    -- ByteString, а создаёт срез на основе существующего. 
+instance Sliceable ByteStringCursor where
     {-# INLINE consumeSlice #-}
     consumeSlice cursor size k = 
         consume cursor size $ \c@(ByteStringCursor bPtr _ _) addr -> do
-            let (Ptr !bAddr) = unsafeForeignPtrToPtr bPtr -- эта функция всегда вызывается из withForeignPtr
+            let !(Ptr !bAddr) = unsafeForeignPtrToPtr bPtr -- эта функция всегда вызывается из withForeignPtr
                 off = addr `minusAddr` Addr bAddr
             k c $ fromForeignPtr bPtr off size
+
+instance Splittable ByteStringCursor where
+--     consumeSplit :: (PrimMonad m) => c -> Int -> (c -> Addr -> m (Result a)) -> (c -> c -> Result a -> m (Result b)) -> m (Result b)
+    consumeSplit cursorSplit size f k = undefined 
 
 -- todo: remove!
 {-# INLINE runByteString #-}
@@ -64,7 +64,7 @@ runByteString (Reader f) bs = do
                         
 
 instance Readable ByteString where 
-    type ReaderCursor ByteString = ByteStringCursor
+    type ReaderConsumable ByteString = ByteStringCursor
     type ReaderMonad ByteString = IO
     {-# INLINE readWith #-}
     readWith reader byteString =  fst <$> runByteString reader byteString

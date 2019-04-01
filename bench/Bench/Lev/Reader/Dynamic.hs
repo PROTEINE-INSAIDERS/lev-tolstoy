@@ -7,11 +7,11 @@ import Lev.Reader
 import Bench.Lev.Reader.Static as Static
 
 {-# INLINE read12Int64PlusInt32 #-}
-read12Int64PlusInt32 :: ( Cursor c ) => Reader c IO Int64
+read12Int64PlusInt32 :: ( Consumable c ) => Reader c IO Int64
 read12Int64PlusInt32 = fixed Static.read12Int64PlusInt32
 
 {-# INLINE getWord64N16Host #-}
-getWord64N16Host :: (Cursor c) => Int -> Reader c IO Word64
+getWord64N16Host :: (Consumable c) => Int -> Reader c IO Word64
 getWord64N16Host = loop 0
   where loop s n | s `seq` n `seq` False = undefined
         loop s 0 = return s
@@ -20,7 +20,7 @@ getWord64N16Host = loop 0
             loop (r - s) (n-16)
 
 {-# INLINE getWord8N16 #-}
-getWord8N16 :: (Cursor c) => Int -> Reader c IO Word8
+getWord8N16 :: (Consumable c) => Int -> Reader c IO Word8
 getWord8N16 = loop 0
   where loop s n | s `seq` n `seq` False = undefined
         loop s 0 = return s
@@ -29,7 +29,7 @@ getWord8N16 = loop 0
             loop (r - s) (n-16)
 
 {-# INLINE getWord64N16HostD #-}
-getWord64N16HostD :: (Cursor c) => Int -> Reader c IO Word64
+getWord64N16HostD :: (Consumable c) => Int -> Reader c IO Word64
 getWord64N16HostD = loop 0
   where loop s n | s `seq` n `seq` False = undefined
         loop s 0 = return s
