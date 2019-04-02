@@ -44,7 +44,7 @@ instance Sliceable ByteStringCursor where
 
 instance Splittable ByteStringCursor where
 --     consumeSplit :: (PrimMonad m) => c -> Int -> (c -> Addr -> m (Result a)) -> (c -> c -> Result a -> m (Result b)) -> m (Result b)
-    consumeSplit c f k = undefined 
+    consumeSplit = undefined 
 
 -- todo: remove!
 {-# INLINE runByteString #-}
@@ -63,6 +63,7 @@ runByteString (Reader f) bs = do
             Fail e -> throwIO e
                         
 
+-- ORPHAN!!
 instance Readable ByteString where 
     type ReaderConsumable ByteString = ByteStringCursor
     type ReaderMonad ByteString = IO

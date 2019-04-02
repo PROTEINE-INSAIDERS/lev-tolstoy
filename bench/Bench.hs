@@ -18,18 +18,15 @@ readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
   where
     strict = bgroup "strict"
-      [ --read1Ginto12Int64plusInt32
-      --, 
-      readWord64N16Host
+      [ read1Ginto12Int64plusInt32
+      , readWord64N16Host
      -- , bigVsLittleEndian
     --  , byteStrings
       ]
       where
         readWord64N16Host =  env setupWord64N16Host $ \ ~buffer ->
           bgroup "Word64N16Host"
-          [ -- bench "binary"  $ nf (B.runGet $ B.getWord64N16Host iterations) (BSL.fromStrict buffer)
-          -- , 
-            bench "store" $ nfIO $ (ST.decodeIOWith $ ST.getWord64N16Host iterations) buffer 
+          [ bench "store" $ nfIO $ (ST.decodeIOWith $ ST.getWord64N16Host iterations) buffer 
           , bench "store8" $ nfIO $ (ST.decodeIOWith $ ST.getWord8N16 size) buffer 
           , bench "lev" $ nfIO $ (LD.runByteString $ LD.getWord64N16Host iterations) buffer
           , bench "levD" $ nfIO $ (LD.runByteString $ LD.getWord64N16HostD iterations) buffer
@@ -44,9 +41,7 @@ readerBench = bgroup "reader" [ strict ]
 
         read1Ginto12Int64plusInt32 = env setup1G $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
-          [
-            bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer
-          , bench "Binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
+          [  bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer
           , bench "Lev static" $ nfIO $ (runIO $ LS.readByteStringWith LS.read12Int64PlusInt32) buffer
           , bench "Lev dynamic" $ nfIO $ (runIO $ LD.runByteString LD.read12Int64PlusInt32) buffer
           ]
