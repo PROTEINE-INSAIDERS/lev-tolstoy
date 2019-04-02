@@ -44,7 +44,7 @@ instance Sliceable ByteStringCursor where
 
 instance Splittable ByteStringCursor where
 --     consumeSplit :: (PrimMonad m) => c -> Int -> (c -> Addr -> m (Result a)) -> (c -> c -> Result a -> m (Result b)) -> m (Result b)
-    consumeSplit cursorSplit size f k = undefined 
+    consumeSplit c f k = undefined 
 
 -- todo: remove!
 {-# INLINE runByteString #-}

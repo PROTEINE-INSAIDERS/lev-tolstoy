@@ -30,7 +30,7 @@ library
       Lev.Readable
       Lev.Reader
       Lev.Reader.ByteString
-      Lev.Reader.Consumable
+      Lev.Reader.Cursor
       Lev.Reader.FixedLength
       Lev.Reader.FixedLength.Syntax
       Lev.Reader.Result

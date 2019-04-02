@@ -33,7 +33,7 @@ instance Applicative (Reader c m) where
     {-# INLINE pure #-}
     pure = pureReader
     {-# INLINE (<*>) #-}
-    rf <*> ra = bindReader (flip fmap ra) rf
+    rf <*> ra = bindReader (`fmap` ra) rf
 
 instance Monad (Reader c m) where
     {-# INLINE (>>=) #-}
@@ -57,20 +57,14 @@ fixed :: forall s c m a . ( KnownNat s, Consumable c, PrimMonad m ) => Fixed.Rea
 fixed (Fixed.Reader f) = Reader $ \c0 k -> do
     let size = fromIntegral (natVal $ sing @s)
     consume c0 size $ \c1 addr -> f addr $ \a -> k c1 a
-        
--- TODO: 
---  Запросить блок для ридера.
---  Прочитать блок ридером. 
---  Вернуть результат. Сбросить курсор, вызвать продолжение.
---  Проблема реализации: 
---    Драйвер может реаллоцировать буфер в процессе чтения,
---    таким образом старый указатель может стать невалидным.    
---    Нужно придумать, как ставить "закладку". При этом слишком "рано"
---    установленная закладка может приводить к тому, что при реаллокации 
---    буфера приходится копировать слишком много данных. Поэтому необходимо
---    уметь убирать закладку, когда она уже не нужна. 
-lookAhead :: (Consumable c) => Reader c m a -> Reader c m a
-lookAhead = undefined
+
+{-# INLINE readAhead #-}
+readAhead :: ( Splittable c, PrimMonad m ) => Reader c m a -> Reader c m a
+readAhead (Reader f) = Reader $ \c k -> 
+    consumeSplit c undefined--(\c0 -> f c0 $ \c1 a -> return (c1, Done a)) 
+                   (\c0 _ r -> case r of
+                                  Done a -> k c0 a
+                                  Fail e -> return (Fail e))
 
 --TODO: подумать, как можно этот метод специализировать по ByteStringCursor (и нужно ли).
 {-# INLINE slice #-}
