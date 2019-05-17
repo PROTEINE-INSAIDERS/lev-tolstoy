@@ -47,6 +47,29 @@ executables:
     - murmur3
     - utf8-string
 
+  nanodump:
+    main:                Main.hs
+    source-dirs:         examples/nanodump
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    - -Wcompat
+    - -Widentities
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wpartial-fields
+    - -Wredundant-constraints
+    dependencies:
+    - base
+    - bytestring
+    - lev-tolstoy
+    - murmur3
+    - utf8-string
+
+
+
 tests:
   lev-tolstoy-test:
     main:                Spec.hs

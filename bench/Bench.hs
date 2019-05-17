@@ -18,8 +18,9 @@ readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
   where
     strict = bgroup "strict"
-      [ read1Ginto12Int64plusInt32
-      , readWord64N16Host
+      [ 
+        read1Ginto12Int64plusInt32
+      -- , readWord64N16Host
      -- , bigVsLittleEndian
     --  , byteStrings
       ]
@@ -41,9 +42,11 @@ readerBench = bgroup "reader" [ strict ]
 
         read1Ginto12Int64plusInt32 = env setup1G $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
-          [  bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer
-          , bench "Lev static" $ nfIO $ (runIO $ LS.readByteStringWith LS.read12Int64PlusInt32) buffer
-          , bench "Lev dynamic" $ nfIO $ (runIO $ LD.runByteString LD.read12Int64PlusInt32) buffer
+          [  
+            bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer
+          -- , bench "Lev static" $ nfIO $ (runIO $ LS.readByteStringWith LS.read12Int64PlusInt32) buffer
+          -- , bench "Lev dynamic" $ nfIO $ (runIO $ LD.runByteString LD.read12Int64PlusInt32) buffer
+          , bench "Binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
           ]
           where
             buffer1G :: Int

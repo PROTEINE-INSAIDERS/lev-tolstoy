@@ -13,9 +13,6 @@ import           Lev.Reader.Result             as X
 --   Once cursor passed to this function it no longer guaranteed to be valid
 --   and sould not be used for repeatable reads.
 class Consumable c where
-    -- TODO: почему не c -> Int -> m (Addr, c)?
-    -- Здесь уже требуется PrimMonad следовательно на вызывающей стороне всегда
-    -- будет монадка.  
     consume :: (PrimMonad m) => c -> Int -> (c -> Addr -> m (Result a)) -> m (Result a)
 
 -- | A ByteString slice can be created. Once sliced, ByteString can be passed of reader monad.
