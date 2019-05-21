@@ -10,15 +10,20 @@ import           Data.Binary.Get as X
 import           Data.ByteString as BS
 import           Data.Int
 import           Data.Word
-
+import Data.Binary.Get.Internal as I
+{-
 {-# INLINE runBinaryGetStrict #-}
 runBinaryGetStrict :: Get a -> ByteString -> (a, ByteString)
-runBinaryGetStrict g = feed (runGetIncremental g) . Just
+runBinaryGetStrict g b = feed (runGetIncremental g) (Just b)
   where
     feed (Done s _ a) _ = (a, s)
-    feed (Partial f) s = feed (f s) Nothing
+    feed (Partial f) s = let (Done s' _ a) = (f s) in (a, s')
     feed (Fail _ pos msg) _ = error $ "Bench.Binary.runBinaryGetStrict failed at position "
                                    ++ show pos ++ " with message : " ++ msg
+-}
+{-# INLINE runBinaryGetStrict #-}
+runBinaryGetStrict :: Get a -> ByteString -> (a, ByteString)
+runBinaryGetStrict g bs = let (I.Done s' a') = runCont g bs (\i a -> I.Done i a) in (a', s')
 
 {-# INLINE read12Int64PlusInt32 #-}
 read12Int64PlusInt32 :: Get Int64

@@ -14,6 +14,27 @@ import qualified Bench.Lev.Reader.Static as LS
 import qualified Lev.Reader.ByteString as LD
 import qualified Bench.Store as ST
 
+nano :: Benchmark
+nano = env setup1G $ \ ~buffer -> bench "Binaryxxx" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
+  where
+    buffer1G :: Int
+    buffer1G = 100000000 
+
+    {-# INLINE iterations #-}
+    iterations :: Int
+    iterations = buffer1G `div` 100
+
+    setup1G :: IO ByteString
+    setup1G = return $ BS.replicate buffer1G 0
+
+    {-# INLINE run #-}
+    run :: (ByteString -> (Int64, ByteString)) -> ByteString -> Int64
+    run f = go 0 iterations
+      where
+        go a 0 _ = a
+        go a n s = let (a', s') = f s in go (a + a') (n - 1) s'
+
+
 readerBench :: Benchmark
 readerBench = bgroup "reader" [ strict ]
   where
@@ -43,10 +64,10 @@ readerBench = bgroup "reader" [ strict ]
         read1Ginto12Int64plusInt32 = env setup1G $ \ ~buffer ->
           bgroup "read 1G into 12 int64 + int32"
           [  
-            bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer
+          --  bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer
           -- , bench "Lev static" $ nfIO $ (runIO $ LS.readByteStringWith LS.read12Int64PlusInt32) buffer
           -- , bench "Lev dynamic" $ nfIO $ (runIO $ LD.runByteString LD.read12Int64PlusInt32) buffer
-          , bench "Binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
+           bench "Binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
           ]
           where
             buffer1G :: Int
@@ -146,7 +167,7 @@ writerBench = bgroup "Writer" [ strict ]
     strict = bgroup "Strict" [ ]
 
 main :: IO ()
-main = defaultMain
-  [ readerBench
-  , writerBench
-  ]
+main = defaultMain [ nano]
+--  [ readerBench
+--  , writerBench
+--  ]
