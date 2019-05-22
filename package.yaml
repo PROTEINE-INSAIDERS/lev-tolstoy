@@ -61,12 +61,12 @@ executables:
     - -Wincomplete-uni-patterns
     - -Wpartial-fields
     - -Wredundant-constraints
+    - -O2
     dependencies:
     - base
     - bytestring
     - lev-tolstoy
-    - murmur3
-    - utf8-string
+    - binary
 
 
 

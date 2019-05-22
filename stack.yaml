@@ -1,8 +1,8 @@
-resolver: lts-13.12
+resolver: lts-13.22
 
 packages:
   - .
-
+  
 ghc-options:
 # $everything: -j -fprint-explicit-kinds -fllvm -ddump-llvm
-  $everything: -j -fprint-explicit-kinds -ddump-simpl -ddump-stg -ddump-cmm -ddump-asm
+  $everything: -j -fprint-explicit-kinds -ddump-simpl -ddump-simpl-stats -ddump-stg -ddump-cmm -ddump-asm

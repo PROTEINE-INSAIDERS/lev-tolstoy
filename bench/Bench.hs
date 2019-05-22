@@ -2,6 +2,7 @@ module Bench where
 
 import qualified Bench.Binary      as B
 import qualified Bench.Handwritten as H
+import qualified Bench.BinaryNano as B
 import           Criterion.Main
 import           Data.ByteString   as BS
 import qualified Data.ByteString.Lazy as BSL
@@ -15,14 +16,20 @@ import qualified Lev.Reader.ByteString as LD
 import qualified Bench.Store as ST
 
 nano :: Benchmark
-nano = env setup1G $ \ ~buffer -> bench "Binaryxxx" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
+nano = env setup1G $ \ ~buffer -> bgroup "nano" 
+  [ -- bench "binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
+      bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer 
+    , bench "store" $ nfIO $ (ST.decodeIOWith $ ST.read12Int64PlusInt32 iterations) buffer
+    , bench "lev" $ nfIO $ (LD.runByteString $ LD.read12Int64PlusInt32a iterations) buffer
+  ]
   where
     buffer1G :: Int
-    buffer1G = 100000000 
+    buffer1G = 1000000
 
     {-# INLINE iterations #-}
     iterations :: Int
     iterations = buffer1G `div` 100
+    
 
     setup1G :: IO ByteString
     setup1G = return $ BS.replicate buffer1G 0

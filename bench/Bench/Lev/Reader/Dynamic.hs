@@ -10,6 +10,15 @@ import Bench.Lev.Reader.Static as Static
 read12Int64PlusInt32 :: ( Consumable c ) => Reader c IO Int64
 read12Int64PlusInt32 = fixed Static.read12Int64PlusInt32
 
+{-# INLINE read12Int64PlusInt32a #-}
+read12Int64PlusInt32a :: (Consumable c) => Int -> Reader c IO Int64 
+read12Int64PlusInt32a = loop 0
+  where loop s n | s `seq` n `seq` False = undefined
+        loop s 0 = return s
+        loop s n = do 
+            r <- fixed Static.read12Int64PlusInt32
+            loop (r + s) (n-1)
+
 {-# INLINE getWord64N16Host #-}
 getWord64N16Host :: (Consumable c) => Int -> Reader c IO Word64
 getWord64N16Host = loop 0

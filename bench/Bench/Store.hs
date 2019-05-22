@@ -2,6 +2,53 @@ module Bench.Store where
 
 import Data.Store
 import Data.Word
+import Data.Int
+
+{-# INLINE read10b #-}
+read10b :: Int -> Peek Int64
+read10b = loop 0
+    where 
+        loop s n | s `seq` n `seq` False = undefined
+        loop s 0 = return s
+        loop s n = do
+            a1 <- peek :: Peek Int8
+            a2 <- peek :: Peek Int8
+            a3 <- peek :: Peek Int8
+            a4 <- peek :: Peek Int8
+            a5 <- peek :: Peek Int8
+            a6 <- peek :: Peek Int8
+            a7 <- peek :: Peek Int8
+            a8 <- peek :: Peek Int8
+            a9 <- peek :: Peek Int8
+            a10 <- peek :: Peek Int8
+            loop (s + fromIntegral a1 + fromIntegral a2 + fromIntegral a3 + fromIntegral a4
+                    + fromIntegral a5 + fromIntegral a6 + fromIntegral a7 + fromIntegral a8
+                    + fromIntegral a9 + fromIntegral a10) (n - 1)
+
+{-# INLINE read12Int64PlusInt32 #-}
+read12Int64PlusInt32 :: Int -> Peek Int64
+read12Int64PlusInt32 = loop 0
+    where 
+        loop s n | s `seq` n `seq` False = undefined
+        loop s 0 = return s
+        loop s n = do
+            a1 <- peek :: Peek Int64
+            a2 <- peek :: Peek Int64
+            a3 <- peek :: Peek Int64
+            a4 <- peek :: Peek Int64
+            a5 <- peek :: Peek Int64
+            a6 <- peek :: Peek Int64
+            a7 <- peek :: Peek Int64
+            a8 <- peek :: Peek Int64
+            a9 <- peek :: Peek Int64
+            a10 <- peek :: Peek Int64
+            a11 <- peek :: Peek Int64
+            a12 <- peek :: Peek Int64
+            a13 <- peek :: Peek Int32
+            loop (s + a1 + a2 + a3 + a4
+                    + a5 + a6 + a7 + a8
+                    + a9 + a10 + a11 + a12
+                    + fromIntegral a13) (n - 1)
 
 {-# INLINE getWord64N16Host #-}
 getWord64N16Host :: Int -> Peek Word64

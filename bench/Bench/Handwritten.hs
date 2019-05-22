@@ -2,7 +2,8 @@
 {-# LANGUAGE MagicHash    #-}
 
 module Bench.Handwritten (
-    read12Int64PlusInt32
+    read12Int64PlusInt32,
+    read10b
   ) where
 
 import           Control.Monad.Primitive
@@ -13,6 +14,27 @@ import           Foreign.ForeignPtr
 import           GHC.Int
 import           GHC.Prim
 import           GHC.Ptr
+
+read10b :: ByteString -> (Int64, ByteString)
+read10b buffer = case toForeignPtr buffer of
+  (fbase, I# off, I# len) ->
+    unsafeInlineIO $ withForeignPtr fbase $ \(Ptr base) -> do
+      let !addr = plusAddr# base off
+          !a1  = indexInt8OffAddr# addr 0#
+          !a2  = indexInt8OffAddr# (plusAddr# addr 1#) 0#
+          !a3  = indexInt8OffAddr# (plusAddr# addr 2#) 0#
+          !a4  = indexInt8OffAddr# (plusAddr# addr 3#) 0#
+          !a5  = indexInt8OffAddr# (plusAddr# addr 4#) 0#
+          !a6  = indexInt8OffAddr# (plusAddr# addr 5#) 0#
+          !a7  = indexInt8OffAddr# (plusAddr# addr 6#) 0#
+          !a8  = indexInt8OffAddr# (plusAddr# addr 7#) 0#
+          !a9  = indexInt8OffAddr# (plusAddr# addr 8#) 0#
+          !a10 = indexInt8OffAddr# (plusAddr# addr 9#) 0#
+      return ( I64# (a1 +# a2 +# a3 +# a4
+               +# a5 +# a6 +# a7 +# a8
+               +# a9 +# a10), 
+               fromForeignPtr fbase (I# (off +# 10#)) (I# (len -# 10#)) )
+{-# INLINE read10b #-}
 
 {-# INLINE read12Int64PlusInt32 #-}
 read12Int64PlusInt32 :: ByteString -> (Int64, ByteString)

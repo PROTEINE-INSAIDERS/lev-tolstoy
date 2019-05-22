@@ -1,0 +1,2 @@
+lev-tolstoy-0.0.0.0: unregistering (local file changes: bench/Bench.hs bench/Bench/Binary.hs bench/Bench/BinaryNano.hs)
+lev-tolstoy-0.0.0.0: build (lib + exe + bench)

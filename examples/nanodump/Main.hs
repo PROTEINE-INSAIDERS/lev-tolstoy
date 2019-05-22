@@ -1,9 +1,12 @@
-data Result = Done {-# UNPACK #-} !Int | Fail 
+import Data.Binary.Get
+import Data.ByteString.Lazy as BL
+import Data.Word
 
-ask :: Int -> Result
-ask a = if (a /= 42) then Done a else Fail
+get2Words :: Get Word64
+get2Words = (+) <$> getWord64host <*> getWord64host
 
 main :: IO ()
-main = case (ask 43) of
-    Done _ -> putStrLn "done"
-    Fail -> putStrLn "error!"
+main = do 
+    let bs = BL.replicate 16 0
+        r  = runGet get2Words bs
+    print r
