@@ -17,10 +17,10 @@ import qualified Bench.Store as ST
 
 nano :: Benchmark
 nano = env setup1G $ \ ~buffer -> bgroup "nano" 
-  [ -- bench "binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
-      bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer 
-    , bench "store" $ nfIO $ (ST.decodeIOWith $ ST.read12Int64PlusInt32 iterations) buffer
-    , bench "lev" $ nfIO $ (LD.runByteString $ LD.read12Int64PlusInt32a iterations) buffer
+  [  bench "binary" $ nf (run $ B.runBinaryGetStrict B.read12Int64PlusInt32) buffer
+   , bench "Handwritten" $ nf (run H.read12Int64PlusInt32) buffer 
+   , bench "store" $ nfIO $ (ST.decodeIOWith $ ST.read12Int64PlusInt32 iterations) buffer
+   , bench "lev" $ nfIO $ (LD.runByteString $ LD.read12Int64PlusInt32a iterations) buffer
   ]
   where
     buffer1G :: Int
